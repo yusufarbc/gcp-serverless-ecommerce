@@ -10,6 +10,7 @@ COPY packages ./packages
 COPY apps/storefront ./apps/storefront
 
 RUN npm install
+RUN npm --workspace=@repo/types run build
 RUN npm --workspace=@repo/storefront run build
 
 FROM node:20-alpine AS runner
