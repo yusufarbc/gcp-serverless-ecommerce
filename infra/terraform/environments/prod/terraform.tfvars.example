@@ -1,0 +1,5 @@
+project_id            = "gcp-serverless-ecommerce"
+region                = "europe-west3"
+environment           = "prod"
+domain_name           = "artisanliving.eu"
+sgtm_container_config = "GTM-XXXXXX"

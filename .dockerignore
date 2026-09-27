@@ -1,0 +1,14 @@
+node_modules
+.next
+.turbo
+dist
+build
+.git
+.gitignore
+README.md
+plan.md
+infra/terraform
+.env*
+!*.env.example
+*.log
+

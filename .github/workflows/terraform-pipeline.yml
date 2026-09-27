@@ -1,0 +1,32 @@
+name: Terraform Pipeline
+on:
+  push:
+    branches: [main]
+    paths: ["infra/terraform/**"]
+  pull_request:
+    branches: [main]
+    paths: ["infra/terraform/**"]
+permissions:
+  contents: read
+  id-token: write
+env:
+  PROJECT_ID: gcp-serverless-ecommerce
+  TF_ROOT: infra/terraform/environments/prod
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.8.5
+      - uses: google-github-actions/auth@v2
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+      - working-directory: ${{ env.TF_ROOT }}
+        run: |
+          terraform fmt -check
+          terraform init
+          terraform plan -no-color
