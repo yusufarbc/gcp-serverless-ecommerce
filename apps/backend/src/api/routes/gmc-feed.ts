@@ -1,7 +1,7 @@
 import { Router, Request, Response } from "express";
 import { GoogleMerchantFeedService } from "../../modules/google-merchant/feed-generator";
 import { MOCK_CATALOG } from "./catalog";
-import { GmcFeedItem } from "@repo/types";
+import type { GmcFeedItem } from "@repo/types";
 
 export const gmcFeedRouter = Router();
 

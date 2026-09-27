@@ -1,4 +1,4 @@
-import { GenericOrder, ParcelItem } from "@repo/types";
+import type { GenericOrder, ParcelItem } from "@repo/types";
 
 export class CustomsAndExportService {
   public generateAtrCertificateData(order: GenericOrder) {

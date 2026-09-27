@@ -8,6 +8,7 @@ COPY packages ./packages
 COPY apps/backend ./apps/backend
 
 RUN npm install
+RUN npm --workspace=@repo/types run build
 RUN npm --workspace=@repo/backend run build
 
 # Stage 2: Production Minimal Image

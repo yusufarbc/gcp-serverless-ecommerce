@@ -1,4 +1,4 @@
-import { GenericOrder, TwoManLogisticsDetails } from "@repo/types";
+import type { GenericOrder, TwoManLogisticsDetails } from "@repo/types";
 
 export class TwoManHandlingDispatcher {
   public async dispatchOrder(order: GenericOrder, details: TwoManLogisticsDetails) {

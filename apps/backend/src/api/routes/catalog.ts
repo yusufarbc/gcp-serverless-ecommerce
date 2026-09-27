@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { GenericProduct } from "@repo/types";
+import type { GenericProduct } from "@repo/types";
 
 export const catalogRouter = Router();
 

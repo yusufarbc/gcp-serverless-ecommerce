@@ -1,5 +1,5 @@
 import { Storage } from "@google-cloud/storage";
-import { GmcFeedItem, GmcFeedConfig } from "@repo/types";
+import type { GmcFeedItem, GmcFeedConfig } from "@repo/types";
 
 export class GoogleMerchantFeedService {
   private storage: Storage;

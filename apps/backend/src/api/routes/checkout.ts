@@ -4,7 +4,7 @@ import { GooglePayPaymentService } from "../../modules/payment-googlepay/googlep
 import { CustomsAndExportService } from "../../modules/furniture-logistics/customs-service";
 import { TwoManHandlingDispatcher } from "../../modules/furniture-logistics/two-man-handling";
 import { CloudTasksService } from "../../services/cloud-tasks";
-import { GenericOrder } from "@repo/types";
+import type { GenericOrder } from "@repo/types";
 
 export const checkoutRouter = Router();
 const ossTaxService = new UnionOssTaxService();
