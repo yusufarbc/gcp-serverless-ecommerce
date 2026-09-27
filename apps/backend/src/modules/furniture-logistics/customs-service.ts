@@ -13,7 +13,7 @@ export class CustomsAndExportService {
 
     return {
       exporter: "Artisan Living TR / Export Division",
-      consignee: \\ \, \, \\,
+      consignee: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}, ${order.shippingAddress.city}, ${order.shippingAddress.countryCode}`,
       countryOfExport: "TR",
       destinationCountry: order.shippingAddress.countryCode,
       hsCode: "9401/9403",
@@ -27,8 +27,8 @@ export class CustomsAndExportService {
     return {
       orderNumber: order.orderNumber,
       date: new Date().toISOString().split("T")[0],
-      recipient: \\ \\,
-      destinationAddress: \\, \ \\,
+      recipient: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}`,
+      destinationAddress: `${order.shippingAddress.address1}, ${order.shippingAddress.postalCode} ${order.shippingAddress.city}`,
       items: order.items.flatMap((i) =>
         i.parcels.map((p: ParcelItem) => ({
           title: i.title,
