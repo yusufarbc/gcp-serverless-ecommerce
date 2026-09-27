@@ -11,12 +11,9 @@ export class CustomsAndExportService {
       0
     );
 
-    const name = order.shippingAddress.firstName + " " + order.shippingAddress.lastName;
-    const dest = name + ", " + order.shippingAddress.city + ", " + order.shippingAddress.countryCode;
-
     return {
       exporter: "Artisan Living TR / Export Division",
-      consignee: dest,
+      consignee: \\ \, \, \\,
       countryOfExport: "TR",
       destinationCountry: order.shippingAddress.countryCode,
       hsCode: "9401/9403",
@@ -27,14 +24,11 @@ export class CustomsAndExportService {
   }
 
   public generatePackingList(order: GenericOrder) {
-    const recipient = order.shippingAddress.firstName + " " + order.shippingAddress.lastName;
-    const addr = order.shippingAddress.address1 + ", " + order.shippingAddress.postalCode + " " + order.shippingAddress.city;
-
     return {
       orderNumber: order.orderNumber,
       date: new Date().toISOString().split("T")[0],
-      recipient: recipient,
-      destinationAddress: addr,
+      recipient: \\ \\,
+      destinationAddress: \\, \ \\,
       items: order.items.flatMap((i) =>
         i.parcels.map((p: ParcelItem) => ({
           title: i.title,
