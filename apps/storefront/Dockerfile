@@ -3,13 +3,12 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
 
 COPY package.json turbo.json ./
 COPY packages ./packages
 COPY apps/storefront ./apps/storefront
 
-RUN npm install
+RUN npm install --include=dev
 RUN npm --workspace=@repo/types run build
 RUN npm --workspace=@repo/storefront run build
 
