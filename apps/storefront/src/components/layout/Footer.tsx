@@ -13,11 +13,19 @@ export const Footer: React.FC<{ locale: SupportedLocale }> = ({ locale }) => {
         </div>
         <div>
           <h4 style={{ color: "#ffffff", marginBottom: "0.5rem" }}>{dict.gpsrTitle}</h4>
-          <p style={{ fontSize: "0.85rem" }}>EU Commerce Compliance GmbH<br />Speicherstr. 55, 60327 Frankfurt<br />gpsr@artisanliving.eu</p>
+          <p style={{ fontSize: "0.85rem" }}>
+            {dict.gpsrAddress}
+            <br />
+            compliance@directcommerce.eu
+          </p>
         </div>
         <div>
           <h4 style={{ color: "#ffffff", marginBottom: "0.5rem" }}>EU Compliance</h4>
-          <p style={{ fontSize: "0.85rem" }}>• {dict.returnNotice}<br />• FSC & EUDR Regulation (EU) 2023/1115</p>
+          <p style={{ fontSize: "0.85rem" }}>
+            • {dict.returnNotice}
+            <br />
+            • Union OSS KDV & GPSR (EU) 2023/988
+          </p>
         </div>
       </div>
     </footer>

@@ -107,6 +107,12 @@ export interface GenericOrder {
   billingAddress: CartAddress;
   paymentMethod: "google_pay" | "card" | "ideal" | "bancontact" | "klarna" | "paypal";
   paymentTransactionId: string;
+  paypalDetails?: {
+    orderId: string;
+    payerId?: string;
+    payerEmail?: string;
+    captureId?: string;
+  };
   subtotal: number;
   taxTotal: number;
   shippingTotal: number;

@@ -2,27 +2,7 @@ import React from "react";
 import Link from "next/link";
 import { SupportedLocale } from "@repo/types";
 import { DICTIONARY } from "../../lib/i18n";
-
-const MOCK_PRODUCTS = [
-  {
-    id: "prod_solid_oak_table_01",
-    handle: "solid-oak-dining-table",
-    title: { de: "Massivholz Eichentisch Artisan", en: "Artisan Solid Oak Dining Table", fr: "Table à Manger en Chêne Massif", nl: "Massief Eiken Eettafel" },
-    description: { de: "Handgefertigter Esstisch aus 100% FSC-zertifiziertem Eichenholz.", en: "Handcrafted solid oak dining table.", fr: "Table à manger en chêne massif.", nl: "Ambachtelijke massief eiken eettafel." },
-    price: 1290.0,
-    brand: "Artisan Living",
-    image: "https://images.unsplash.com/photo-1615066390971-03e4e1c36ddf?auto=format&fit=crop&w=800&q=80"
-  },
-  {
-    id: "prod_scandi_lounge_sofa_02",
-    handle: "scandi-linen-lounge-sofa",
-    title: { de: "Skandi 3-Sitzer Sofa Keten", en: "Scandi 3-Seater Natural Linen Sofa", fr: "Canapé 3 Places Scandinave en Lin", nl: "Scandinavische 3-Zits Linnen Bank" },
-    description: { de: "Modulares 3-Sitzer Sofa mit Naturleinenbezug.", en: "Modular 3-seater sofa with natural linen fabric.", fr: "Canapé 3 places en lin.", nl: "Modulaire 3-zits bank." },
-    price: 1850.0,
-    brand: "Artisan Living",
-    image: "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?auto=format&fit=crop&w=800&q=80"
-  }
-];
+import { STORE_PRODUCTS } from "../../lib/catalog";
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const resolved = await params;
@@ -31,30 +11,167 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   return (
     <div style={{ maxWidth: "1200px", margin: "2rem auto", padding: "0 1.5rem" }}>
-      <section style={{ textAlign: "center", padding: "3rem 1rem", backgroundColor: "#111827", color: "white", borderRadius: "0.75rem", marginBottom: "3rem" }}>
-        <h1 style={{ fontSize: "2.5rem", margin: "0 0 1rem 0" }}>{dict.tagline}</h1>
-        <p style={{ color: "#9ca3af" }}>FSC & EUDR Konform • 2-Man Handling bis ins Wohnzimmer</p>
+      {/* Hero Section */}
+      <section
+        style={{
+          textAlign: "center",
+          padding: "3.5rem 1.5rem",
+          background: "linear-gradient(135deg, #111827 0%, #1f2937 100%)",
+          color: "white",
+          borderRadius: "0.75rem",
+          marginBottom: "3rem",
+          boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        <span
+          style={{
+            display: "inline-block",
+            padding: "0.25rem 0.75rem",
+            backgroundColor: "#2563eb",
+            color: "white",
+            fontSize: "0.8rem",
+            fontWeight: 700,
+            borderRadius: "9999px",
+            marginBottom: "1rem",
+            letterSpacing: "0.05em",
+            textTransform: "uppercase",
+          }}
+        >
+          Direct-to-Consumer Platform
+        </span>
+        <h1 style={{ fontSize: "2.5rem", margin: "0 0 1rem 0", fontWeight: 800, lineHeight: 1.2 }}>
+          {dict.tagline}
+        </h1>
+        <p style={{ color: "#d1d5db", fontSize: "1.1rem", maxWidth: "800px", margin: "0 auto", lineHeight: 1.6 }}>
+          {dict.heroSubtitle}
+        </p>
+
+        {/* Value Prop Badges */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "1.5rem",
+            flexWrap: "wrap",
+            marginTop: "2rem",
+            fontSize: "0.875rem",
+            color: "#9ca3af",
+          }}
+        >
+          <span>🚀 Schneller EU-Versand</span>
+          <span>•</span>
+          <span>🛡️ 14 Tage Rückgaberecht</span>
+          <span>•</span>
+          <span>🔒 Google Pay & PayPal</span>
+          <span>•</span>
+          <span>🇪🇺 Union OSS KDV</span>
+        </div>
       </section>
 
+      {/* Catalog Grid */}
       <section id="catalog">
-        <h2 style={{ fontSize: "1.75rem", marginBottom: "1.5rem" }}>{dict.navProducts}</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "2rem" }}>
-          {MOCK_PRODUCTS.map((p) => (
-            <div key={p.id} style={{ border: "1px solid #e5e7eb", borderRadius: "0.5rem", overflow: "hidden", backgroundColor: "white" }}>
-              <img src={p.image} alt={p.title[locale] || p.title.en} style={{ width: "100%", height: "240px", objectFit: "cover" }} />
-              <div style={{ padding: "1.25rem" }}>
-                <span style={{ fontSize: "0.75rem", color: "#2563eb", fontWeight: 700 }}>{p.brand}</span>
-                <h3 style={{ margin: "0.25rem 0", fontSize: "1.2rem" }}>{p.title[locale] || p.title.en}</h3>
-                <p style={{ color: "#6b7280", fontSize: "0.9rem" }}>{p.description[locale] || p.description.en}</p>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "1rem" }}>
-                  <span style={{ fontSize: "1.3rem", fontWeight: 700 }}>{p.price.toFixed(2)} €</span>
-                  <Link href={`/${locale}/products/${p.handle}`} style={{ backgroundColor: "#111827", color: "white", padding: "0.5rem 1rem", borderRadius: "0.25rem", textDecoration: "none", fontSize: "0.85rem" }}>
-                    Details →
-                  </Link>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem" }}>
+          <div>
+            <h2 style={{ fontSize: "1.85rem", margin: 0, fontWeight: 700 }}>{dict.navProducts}</h2>
+            <p style={{ color: "#6b7280", margin: "0.25rem 0 0 0" }}>Entdecken Sie ausgewählte Highlights unseres Sortiments.</p>
+          </div>
+          <span style={{ fontSize: "0.9rem", color: "#2563eb", fontWeight: 600 }}>{STORE_PRODUCTS.length} Produkte verfügbar</span>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
+          {STORE_PRODUCTS.map((p) => {
+            const variant = p.variants[0];
+            const title = p.title[locale] || p.title.en;
+            const description = p.description[locale] || p.description.en;
+
+            return (
+              <div
+                key={p.id}
+                style={{
+                  border: "1px solid #e5e7eb",
+                  borderRadius: "0.75rem",
+                  overflow: "hidden",
+                  backgroundColor: "white",
+                  display: "flex",
+                  flexDirection: "column",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                }}
+              >
+                <div style={{ position: "relative", height: "260px", overflow: "hidden", backgroundColor: "#f3f4f6" }}>
+                  <img
+                    src={p.media[0]?.url}
+                    alt={title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "0.75rem",
+                      left: "0.75rem",
+                      backgroundColor: "rgba(17, 24, 39, 0.85)",
+                      backdropFilter: "blur(4px)",
+                      color: "white",
+                      fontSize: "0.7rem",
+                      fontWeight: 600,
+                      padding: "0.25rem 0.6rem",
+                      borderRadius: "0.25rem",
+                    }}
+                  >
+                    {p.category}
+                  </span>
+                </div>
+
+                <div style={{ padding: "1.5rem", display: "flex", flexDirection: "column", flexGrow: 1 }}>
+                  <span style={{ fontSize: "0.75rem", color: "#2563eb", fontWeight: 700, textTransform: "uppercase" }}>
+                    {p.brand}
+                  </span>
+                  <h3 style={{ margin: "0.4rem 0", fontSize: "1.2rem", fontWeight: 700, color: "#111827" }}>
+                    {title}
+                  </h3>
+                  <p style={{ color: "#6b7280", fontSize: "0.875rem", lineHeight: 1.5, flexGrow: 1 }}>
+                    {description}
+                  </p>
+
+                  <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: "1rem", marginTop: "1rem" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                      <div>
+                        <span style={{ fontSize: "1.35rem", fontWeight: 800, color: "#111827" }}>
+                          {variant?.price.toFixed(2)} €
+                        </span>
+                        {variant?.originalPrice && (
+                          <span style={{ fontSize: "0.85rem", color: "#9ca3af", textDecoration: "line-through", marginLeft: "0.5rem" }}>
+                            {variant.originalPrice.toFixed(2)} €
+                          </span>
+                        )}
+                      </div>
+                      <span style={{ fontSize: "0.75rem", color: "#059669", fontWeight: 600 }}>
+                        Auf Lager
+                      </span>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+                      <Link
+                        href={`/${locale}/products/${p.handle}`}
+                        style={{
+                          flex: 1,
+                          textAlign: "center",
+                          backgroundColor: "#111827",
+                          color: "white",
+                          padding: "0.65rem 1rem",
+                          borderRadius: "0.375rem",
+                          textDecoration: "none",
+                          fontSize: "0.875rem",
+                          fontWeight: 600,
+                        }}
+                      >
+                        Details ansehen →
+                      </Link>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

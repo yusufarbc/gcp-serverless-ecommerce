@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Artisan Living Europe | D2C Furniture",
-  description: "European D2C Furniture direct from manufacturer, powered by GCP Serverless.",
+  title: "Apex Direct Europe | Serverless D2C Commerce",
+  description: "Next-generation Direct-to-Consumer e-commerce platform powered by Google Cloud Serverless.",
   manifest: "/manifest.json",
 };
 

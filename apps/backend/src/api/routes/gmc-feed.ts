@@ -8,8 +8,8 @@ export const gmcFeedRouter = Router();
 gmcFeedRouter.post("/generate", async (_req: Request, res: Response) => {
   try {
     const bucketName = process.env.GCS_BUCKET_NAME || "gcp-commerce-media";
-    const storeUrl = process.env.STOREFRONT_URL || "https://artisanliving.eu";
-    const storeName = process.env.STORE_NAME || "Artisan Living Europe";
+    const storeUrl = process.env.STOREFRONT_URL || "https://apexstore.eu";
+    const storeName = process.env.STORE_NAME || "Apex Direct Europe";
 
     const feedService = new GoogleMerchantFeedService({
       storeName,
@@ -41,7 +41,7 @@ gmcFeedRouter.post("/generate", async (_req: Request, res: Response) => {
           shipping_length: primaryParcel ? `${primaryParcel.lengthCm} cm` : undefined,
           shipping_width: primaryParcel ? `${primaryParcel.widthCm} cm` : undefined,
           shipping_height: primaryParcel ? `${primaryParcel.heightCm} cm` : undefined,
-          transit_time_label: "standard_furniture_eu",
+          transit_time_label: "standard_express_eu",
           custom_label_0: product.eudr?.isWoodProduct ? "EUDR_COMPLIANT" : "STANDARD",
           custom_label_1: variant.customs.hsCode,
           custom_label_2: "2_MAN_HANDLING",

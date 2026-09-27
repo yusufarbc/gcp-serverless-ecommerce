@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { UnionOssTaxService } from "../../modules/tax-provider/oss-tax-service";
 import { GooglePayPaymentService } from "../../modules/payment-googlepay/googlepay-service";
+import { PayPalPaymentService } from "../../modules/payment-paypal/paypal-service";
 import { CustomsAndExportService } from "../../modules/furniture-logistics/customs-service";
 import { TwoManHandlingDispatcher } from "../../modules/furniture-logistics/two-man-handling";
 import { CloudTasksService } from "../../services/cloud-tasks";
@@ -9,6 +10,7 @@ import type { GenericOrder } from "@repo/types";
 export const checkoutRouter = Router();
 const ossTaxService = new UnionOssTaxService();
 const googlePayService = new GooglePayPaymentService("stripe");
+const payPalService = new PayPalPaymentService();
 const customsService = new CustomsAndExportService();
 const twoManDispatcher = new TwoManHandlingDispatcher();
 const cloudTasksService = new CloudTasksService();
@@ -28,7 +30,39 @@ checkoutRouter.post("/calculate-tax", (req: Request, res: Response) => {
 });
 
 /**
- * Complete order with Google Pay or direct payment
+ * PayPal Checkout v2 Order Creation
+ */
+checkoutRouter.post("/paypal/create-order", async (req: Request, res: Response) => {
+  try {
+    const { amount, currency, customId } = req.body;
+    if (typeof amount !== "number" || amount <= 0) {
+      return res.status(400).json({ error: "amount (number > 0) is required" });
+    }
+    const result = await payPalService.createOrder(amount, currency || "EUR", customId || "");
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+/**
+ * PayPal Checkout v2 Order Capture
+ */
+checkoutRouter.post("/paypal/capture-order", async (req: Request, res: Response) => {
+  try {
+    const { orderId } = req.body;
+    if (!orderId) {
+      return res.status(400).json({ error: "orderId is required" });
+    }
+    const result = await payPalService.captureOrder(orderId);
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({ error: (err as Error).message });
+  }
+});
+
+/**
+ * Complete order with Google Pay, PayPal, or standard checkout
  */
 checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
   try {
@@ -38,6 +72,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       billingAddress,
       paymentMethod,
       googlePayToken,
+      paypalOrderId,
       logisticsDetails,
     } = req.body;
 
@@ -51,11 +86,18 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       0
     );
     const taxCalc = ossTaxService.calculateTax(subtotal, shippingAddress.countryCode);
-    const shippingTotal = 120.0; // Standard consolidated EU road freight
+    
+    // Generic dynamic shipping calculation (Free EU delivery over 100 EUR, or standard 9.90 EUR, or freight 89 EUR)
+    const isBulky = cart.items.some((item: { parcels?: Array<{ weightKg: number }> }) =>
+      item.parcels?.some((p) => p.weightKg > 30)
+    );
+    const shippingTotal = isBulky ? 89.0 : subtotal >= 100 ? 0.0 : 9.90;
     const grandTotal = Math.round((subtotal + taxCalc.taxAmount + shippingTotal) * 100) / 100;
 
-    // 2. Process Payment (Google Pay Tokenization or Gateway)
+    // 2. Process Payment (Google Pay Tokenization, PayPal, or Gateway)
     let transactionId = `txn_manual_${Date.now()}`;
+    let paypalDetails = undefined;
+
     if (paymentMethod === "google_pay" && googlePayToken) {
       const paymentResult = await googlePayService.processPayment(
         googlePayToken,
@@ -64,12 +106,25 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
         `ORD_${Date.now()}`
       );
       if (!paymentResult.success) {
-        return res.status(402).json({ error: "Payment verification failed", details: paymentResult.error });
+        return res.status(402).json({ error: "Google Pay verification failed", details: paymentResult.error });
       }
       transactionId = paymentResult.transactionId;
+    } else if (paymentMethod === "paypal") {
+      const idToCapture = paypalOrderId || `PAYPAL_${Date.now()}`;
+      const captureResult = await payPalService.captureOrder(idToCapture);
+      if (!captureResult.success) {
+        return res.status(402).json({ error: "PayPal payment capture failed", details: captureResult.error });
+      }
+      transactionId = captureResult.captureId || idToCapture;
+      paypalDetails = {
+        orderId: captureResult.orderId,
+        payerId: captureResult.payer?.payerId,
+        payerEmail: captureResult.payer?.emailAddress,
+        captureId: captureResult.captureId,
+      };
     }
 
-    // 3. Construct Order Object
+    // 3. Construct Generic Order Object
     const orderNumber = `ORD-EU-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const order: GenericOrder = {
       id: `ord_${Date.now()}`,
@@ -82,6 +137,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       billingAddress: billingAddress || shippingAddress,
       paymentMethod: paymentMethod || "google_pay",
       paymentTransactionId: transactionId,
+      paypalDetails,
       subtotal,
       taxTotal: taxCalc.taxAmount,
       shippingTotal,
@@ -96,7 +152,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
     const atrData = customsService.generateAtrCertificateData(order);
     const packingList = customsService.generatePackingList(order);
 
-    // 5. Dispatch to 2-Man Logistics carrier network
+    // 5. Dispatch to logistics carrier network (DHL Express / Rhenus)
     const carrierDispatch = await twoManDispatcher.dispatchOrder(order, logisticsDetails || {});
 
     // 6. Asynchronously trigger Cloud Tasks (Invoice PDF, Email Notification)

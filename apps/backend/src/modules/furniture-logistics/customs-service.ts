@@ -12,11 +12,11 @@ export class CustomsAndExportService {
     );
 
     return {
-      exporter: "Artisan Living TR / Export Division",
+      exporter: `${process.env.STORE_NAME || "Apex Direct Europe"} Export Operations`,
       consignee: `${order.shippingAddress.firstName} ${order.shippingAddress.lastName}, ${order.shippingAddress.city}, ${order.shippingAddress.countryCode}`,
       countryOfExport: "TR",
       destinationCountry: order.shippingAddress.countryCode,
-      hsCode: "9401/9403",
+      hsCode: "8518/4202/9405",
       packagesCount: totalPackages,
       grossWeightKg: totalWeight,
       declarationDate: new Date().toISOString().split("T")[0],

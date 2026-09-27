@@ -1,10 +1,6 @@
-import { Router, Request, Response } from "express";
-import type { GenericProduct } from "@repo/types";
+import { GenericProduct } from "@repo/types";
 
-export const catalogRouter = Router();
-
-// Generic multi-category D2C catalog for EU cross-border commerce
-export const MOCK_CATALOG: GenericProduct[] = [
+export const STORE_PRODUCTS: GenericProduct[] = [
   {
     id: "prod_anc_headphones_01",
     handle: "aura-pro-anc-headphones",
@@ -15,7 +11,7 @@ export const MOCK_CATALOG: GenericProduct[] = [
       en: "Aura Pro Wireless ANC Headphones",
     },
     description: {
-      de: "High-Resolution Audio mit aktiver hybrider Geräuschunterdrückung, 40h Akkulaufzeit und ultraleichter Aluminium-Konstruktion.",
+      de: "High-Resolution Studio-Audio mit hybrider aktiver Geräuschunterdrückung, 40h Akkulaufzeit und ultraleichter Aluminium-Konstruktion.",
       fr: "Audio haute résolution avec réduction active hybride du bruit, 40h d'autonomie et structure aluminium ultra-légère.",
       nl: "High-resolution audio met hybride actieve ruisonderdrukking, 40 uur batterijduur en ultralichte aluminium constructie.",
       en: "High-resolution studio audio with hybrid active noise cancellation, 40-hour battery life, and ultra-lightweight aluminum chassis.",
@@ -315,14 +311,6 @@ export const MOCK_CATALOG: GenericProduct[] = [
   },
 ];
 
-catalogRouter.get("/products", (_req: Request, res: Response) => {
-  res.status(200).json({ products: MOCK_CATALOG });
-});
-
-catalogRouter.get("/products/:handle", (req: Request, res: Response) => {
-  const product = MOCK_CATALOG.find((p) => p.handle === req.params.handle);
-  if (!product) {
-    return res.status(404).json({ error: "Product not found" });
-  }
-  return res.status(200).json({ product });
-});
+export function getProductByHandle(handle: string): GenericProduct | undefined {
+  return STORE_PRODUCTS.find((p) => p.handle === handle);
+}

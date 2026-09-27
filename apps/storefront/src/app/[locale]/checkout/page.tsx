@@ -1,40 +1,202 @@
 "use client";
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React, { useState, Suspense } from "react";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { SupportedLocale } from "@repo/types";
 import { DICTIONARY } from "../../../lib/i18n";
 import { GooglePayButton } from "../../../components/checkout/GooglePayButton";
+import { PayPalButton } from "../../../components/checkout/PayPalButton";
+import { STORE_PRODUCTS } from "../../../lib/catalog";
 
-export default function CheckoutPage() {
+function CheckoutContent() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const locale = ((params?.locale as string) || "de") as SupportedLocale;
   const dict = DICTIONARY[locale] || DICTIONARY.de;
 
+  const productHandle = searchParams.get("product") || "aura-pro-anc-headphones";
+  const product = STORE_PRODUCTS.find((p) => p.handle === productHandle) || STORE_PRODUCTS[0];
+
   const [countryCode, setCountryCode] = useState("DE");
-  const subtotal = 1290.0;
-  const shipping = 120.0;
-  const vatRate = countryCode === "DE" ? 0.19 : 0.20;
-  const tax = subtotal * vatRate;
-  const total = subtotal + tax + shipping;
+  const [paymentMethod, setPaymentMethod] = useState<"google_pay" | "paypal" | "card">("google_pay");
+
+  const subtotal = product ? product.variants[0].price : 249.0;
+
+  // Dynamic EU VAT rates (Union OSS)
+  const vatRates: Record<string, number> = {
+    DE: 0.19,
+    FR: 0.20,
+    NL: 0.21,
+    AT: 0.20,
+    IT: 0.22,
+    ES: 0.21,
+    BE: 0.21,
+  };
+  const vatRate = vatRates[countryCode] || 0.19;
+  const tax = Math.round(subtotal * vatRate * 100) / 100;
+  const shipping = subtotal >= 100 ? 0.0 : 9.90;
+  const total = Math.round((subtotal + tax + shipping) * 100) / 100;
+
+  const handleOrderSuccess = () => {
+    router.push(`/${locale}/order-success`);
+  };
 
   return (
-    <div style={{ maxWidth: "800px", margin: "2rem auto", padding: "0 1.5rem" }}>
-      <h1 style={{ fontSize: "1.75rem", marginBottom: "1.5rem" }}>{dict.checkout}</h1>
-      <div style={{ backgroundColor: "white", padding: "1.5rem", borderRadius: "0.5rem", border: "1px solid #e5e7eb" }}>
-        <h3>Lieferland (Union OSS KDV)</h3>
-        <select value={countryCode} onChange={(e) => setCountryCode(e.target.value)} style={{ width: "100%", padding: "0.5rem", marginBottom: "1rem" }}>
-          <option value="DE">Deutschland (19% MwSt.)</option>
-          <option value="FR">France (20% TVA)</option>
-          <option value="NL">Nederland (21% BTW)</option>
-        </select>
-        <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: "1rem", marginBottom: "1rem" }}>
-          <div style={{ display: "flex", justifyContent: "space-between" }}><span>Zwischensumme:</span><span>{subtotal.toFixed(2)} €</span></div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}><span>2-Man Spedition:</span><span>{shipping.toFixed(2)} €</span></div>
-          <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700 }}><span>Gesamt:</span><span>{total.toFixed(2)} €</span></div>
+    <div style={{ maxWidth: "880px", margin: "2.5rem auto", padding: "0 1.5rem" }}>
+      <h1 style={{ fontSize: "2rem", marginBottom: "1.5rem", fontWeight: 800, color: "#111827" }}>
+        {dict.checkout}
+      </h1>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2rem" }}>
+        {/* Left Column: Delivery & Payment Options */}
+        <div style={{ backgroundColor: "white", padding: "1.75rem", borderRadius: "0.75rem", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+          <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
+            1. Lieferland (Union OSS MwSt.)
+          </h2>
+          <select
+            value={countryCode}
+            onChange={(e) => setCountryCode(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.75rem",
+              borderRadius: "0.375rem",
+              border: "1px solid #d1d5db",
+              backgroundColor: "#f9fafb",
+              fontSize: "0.95rem",
+              marginBottom: "1.5rem",
+            }}
+          >
+            <option value="DE">Deutschland (19% MwSt.)</option>
+            <option value="FR">France (20% TVA)</option>
+            <option value="NL">Nederland (21% BTW)</option>
+            <option value="AT">Österreich (20% USt.)</option>
+            <option value="IT">Italia (22% IVA)</option>
+            <option value="ES">España (21% IVA)</option>
+            <option value="BE">België / Belgique (21% BTW/TVA)</option>
+          </select>
+
+          <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
+            2. Zahlungsmethode wählen
+          </h2>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                padding: "0.85rem",
+                border: `2px solid ${paymentMethod === "google_pay" ? "#2563eb" : "#e5e7eb"}`,
+                borderRadius: "0.5rem",
+                cursor: "pointer",
+                backgroundColor: paymentMethod === "google_pay" ? "#eff6ff" : "white",
+              }}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="google_pay"
+                checked={paymentMethod === "google_pay"}
+                onChange={() => setPaymentMethod("google_pay")}
+              />
+              <span style={{ fontWeight: 600 }}>Google Pay</span>
+              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>1-Klick Zahlung</span>
+            </label>
+
+            <label
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                padding: "0.85rem",
+                border: `2px solid ${paymentMethod === "paypal" ? "#0079c1" : "#e5e7eb"}`,
+                borderRadius: "0.5rem",
+                cursor: "pointer",
+                backgroundColor: paymentMethod === "paypal" ? "#f0f9ff" : "white",
+              }}
+            >
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="paypal"
+                checked={paymentMethod === "paypal"}
+                onChange={() => setPaymentMethod("paypal")}
+              />
+              <span style={{ fontWeight: 600, color: "#003087" }}>
+                Pay<span style={{ color: "#0079c1" }}>Pal</span>
+              </span>
+              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>Käuferschutz</span>
+            </label>
+          </div>
+
+          {/* Payment Execution */}
+          {paymentMethod === "google_pay" && (
+            <GooglePayButton amount={total} onPaymentSuccess={handleOrderSuccess} />
+          )}
+
+          {paymentMethod === "paypal" && (
+            <PayPalButton amount={total} onPaymentSuccess={handleOrderSuccess} />
+          )}
         </div>
-        <GooglePayButton amount={total} onPaymentSuccess={() => router.push(`/${locale}/order-success`)} />
+
+        {/* Right Column: Order Summary */}
+        <div style={{ backgroundColor: "#f9fafb", padding: "1.75rem", borderRadius: "0.75rem", border: "1px solid #e5e7eb", height: "fit-content" }}>
+          <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
+            Bestellübersicht
+          </h2>
+
+          {product && (
+            <div style={{ display: "flex", gap: "1rem", alignItems: "center", paddingBottom: "1rem", borderBottom: "1px solid #e5e7eb", marginBottom: "1rem" }}>
+              <img
+                src={product.media[0]?.url}
+                alt={product.title[locale] || product.title.en}
+                style={{ width: "64px", height: "64px", objectFit: "cover", borderRadius: "0.375rem" }}
+              />
+              <div style={{ flexGrow: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>
+                  {product.title[locale] || product.title.en}
+                </div>
+                <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>Menge: 1</div>
+              </div>
+              <div style={{ fontWeight: 700 }}>{subtotal.toFixed(2)} €</div>
+            </div>
+          )}
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.9rem", color: "#4b5563" }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>Zwischensumme:</span>
+              <span style={{ fontWeight: 600, color: "#111827" }}>{subtotal.toFixed(2)} €</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>MwSt. ({Math.round(vatRate * 100)}% OSS):</span>
+              <span style={{ fontWeight: 600, color: "#111827" }}>{tax.toFixed(2)} €</span>
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span>DHL / UPS Expressversand:</span>
+              <span style={{ fontWeight: 600, color: shipping === 0 ? "#059669" : "#111827" }}>
+                {shipping === 0 ? "Kostenlos" : `${shipping.toFixed(2)} €`}
+              </span>
+            </div>
+            <div style={{ borderTop: "2px solid #e5e7eb", paddingTop: "0.75rem", marginTop: "0.5rem", display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: 800, color: "#111827" }}>
+              <span>Gesamtbetrag:</span>
+              <span>{total.toFixed(2)} €</span>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "1.5rem", fontSize: "0.75rem", color: "#6b7280", lineHeight: 1.4 }}>
+            ✓ 14 Tage gesetzliches Widerrufsrecht<br />
+            ✓ Sichere SSL-Verschlüsselung nach PCI-DSS<br />
+            ✓ Schneller EU-Versand mit Sendungsverfolgung
+          </div>
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<div style={{ textAlign: "center", padding: "4rem" }}>Laden...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }
