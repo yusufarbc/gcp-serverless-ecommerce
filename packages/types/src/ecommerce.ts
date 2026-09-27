@@ -71,12 +71,14 @@ export interface CartAddress {
   firstName: string;
   lastName: string;
   company?: string;
-  address1: string;
+  address1?: string;
   address2?: string;
+  addressLine1?: string;
+  addressLine2?: string;
   city: string;
   postalCode: string;
   countryCode: string; // ISO 2-letter: "DE", "FR", "NL", etc.
-  phone: string;
+  phone?: string;
   email: string;
 }
 

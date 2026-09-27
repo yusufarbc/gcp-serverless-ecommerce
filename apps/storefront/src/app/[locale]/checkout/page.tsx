@@ -21,7 +21,7 @@ function CheckoutContent() {
   const [paymentMethod, setPaymentMethod] = useState<"google_pay" | "paypal" | "card">("google_pay");
 
   const subtotal = product ? product.variants[0].price : 249.0;
-
+  
   // Dynamic EU VAT rates (Union OSS)
   const vatRates: Record<string, number> = {
     DE: 0.19,
@@ -195,7 +195,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div style={{ textAlign: "center", padding: "4rem" }}>Laden...</div>}>
+    <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center", color: "#6b7280" }}>Lade Kasse...</div>}>
       <CheckoutContent />
     </Suspense>
   );

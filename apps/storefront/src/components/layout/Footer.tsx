@@ -24,7 +24,7 @@ export const Footer: React.FC<{ locale: SupportedLocale }> = ({ locale }) => {
           <p style={{ fontSize: "0.85rem" }}>
             • {dict.returnNotice}
             <br />
-            • Union OSS KDV & GPSR (EU) 2023/988
+            • Union OSS Dynamic VAT & GPSR (EU) 2023/988
           </p>
         </div>
       </div>
