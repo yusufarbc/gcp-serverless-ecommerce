@@ -21,7 +21,7 @@ resource "google_sql_database_instance" "instance" {
       ipv4_enabled                                  = false
       private_network                               = var.network_id
       require_ssl                                   = true
-      ssl_mode                                      = "ENCRYPTED_ONLY"
+      ssl_mode                                      = "TRUSTED_CLIENT_CERTIFICATE_REQUIRED"
       enable_private_path_for_google_cloud_services = true
     }
 

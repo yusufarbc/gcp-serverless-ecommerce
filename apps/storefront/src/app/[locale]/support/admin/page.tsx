@@ -19,7 +19,7 @@ export default function SupportAdminPage() {
 
   // Real-time Translate Sandbox state
   const [sandboxInput, setSandboxInput] = useState("Il pacco è arrivato danneggiato, vorrei richiedere il rimborso o una nuova spedizione.");
-  const [sandboxTargetLang, setSandboxTargetLang] = useState("en");
+  const [sandboxTargetLang] = useState("en");
   const [sandboxOutput, setSandboxOutput] = useState("");
   const [sandboxLoading, setSandboxLoading] = useState(false);
   const [sandboxProvider, setSandboxProvider] = useState("");

@@ -1,5 +1,4 @@
 import React, { Suspense } from "react";
-import Link from "next/link";
 import { SupportedLocale } from "@repo/types";
 import { DICTIONARY, LOCALES } from "../../../lib/i18n";
 import { OrderSuccessClient } from "./OrderSuccessClient";
