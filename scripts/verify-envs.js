@@ -76,6 +76,10 @@ async function main() {
       subtotal: 199.0,
       countryCode: "DE",
     });
+    await postJson(`${env.name} Stripe PaymentIntent (Demo)`, `${env.backend}/api/checkout/stripe/create-payment-intent`, {
+      amount: 249.0,
+      currency: "EUR",
+    });
     await postJson(`${env.name} PayPal Create Order`, `${env.backend}/api/checkout/paypal/create-order`, {
       amount: 49.9,
       currency: "EUR",
@@ -85,6 +89,10 @@ async function main() {
       subtotal: 100.0,
       countryCode: "IT",
     });
+    await check(`${env.name} Orders API`, `${env.backend}/api/checkout/orders`);
+    await check(`${env.name} Single Order (Demo)`, `${env.backend}/api/checkout/orders/ORD-EU-2026-7842`);
+    await check(`${env.name} EU VAT Invoice HTML`, `${env.backend}/api/checkout/orders/ORD-EU-2026-7842/invoice`);
+    await check(`${env.name} Email Outbox API`, `${env.backend}/api/tasks/email-outbox`);
     await check(`${env.name} Storefront Home (EN)`, `${env.storefront}/en`);
     await check(`${env.name} Storefront Home (IT)`, `${env.storefront}/it`);
     await check(`${env.name} Storefront Home (DE)`, `${env.storefront}/de`);
@@ -97,6 +105,7 @@ async function main() {
     });
     await check(`${env.name} Storefront Support Page`, `${env.storefront}/it/support`);
     await check(`${env.name} Storefront Support Admin Desk`, `${env.storefront}/it/support/admin`);
+    await check(`${env.name} Storefront Order Success Page`, `${env.storefront}/en/order-success`);
     await check(`${env.name} Storefront Manifest`, `${env.storefront}/manifest.json`);
     await check(`${env.name} Storefront API Proxy (Catalog)`, `${env.storefront}/api/catalog/products`);
   }

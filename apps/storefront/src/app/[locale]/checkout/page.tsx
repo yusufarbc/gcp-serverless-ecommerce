@@ -41,8 +41,45 @@ function CheckoutContent() {
   const shipping = subtotal >= 100 ? 0.0 : 9.90;
   const total = Math.round((subtotal + tax + shipping) * 100) / 100;
 
-  const handleOrderSuccess = () => {
-    router.push(`/${locale}/order-success`);
+  const handleOrderSuccess = async (paymentDetails?: any) => {
+    const generatedOrderNumber = `ORD-EU-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_CORE_API_URL || "";
+      await fetch(`${apiUrl}/api/checkout/process-order`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cart: {
+            id: `cart_${Date.now()}`,
+            items: [
+              {
+                productId: product.id,
+                variantId: product.variants[0].id,
+                title: product.title[locale] || product.title.en,
+                price: subtotal,
+                quantity: 1,
+                parcels: product.variants[0].parcels || [],
+              },
+            ],
+          },
+          shippingAddress: {
+            firstName: "European",
+            lastName: "Shopper",
+            email: "shopper.eu@example.com",
+            address1: "Central Promenade 42",
+            city: countryCode === "DE" ? "Berlin" : countryCode === "IT" ? "Milano" : countryCode === "FR" ? "Paris" : "Amsterdam",
+            postalCode: "10117",
+            countryCode: countryCode,
+          },
+          paymentMethod: paymentMethod,
+          googlePayToken: paymentMethod === "google_pay" ? "TOKEN_DEMO_GPAY" : undefined,
+          paypalOrderId: paymentDetails?.orderId,
+        }),
+      });
+    } catch (e) {
+      console.warn("Could not post order to backend:", e);
+    }
+    router.push(`/${locale}/order-success?orderNumber=${generatedOrderNumber}&country=${countryCode}`);
   };
 
   return (

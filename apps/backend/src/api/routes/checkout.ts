@@ -2,9 +2,13 @@ import { Router, Request, Response } from "express";
 import { UnionOssTaxService } from "../../modules/tax-provider/oss-tax-service";
 import { GooglePayPaymentService } from "../../modules/payment-googlepay/googlepay-service";
 import { PayPalPaymentService } from "../../modules/payment-paypal/paypal-service";
+import { stripeService } from "../../modules/payment-stripe/stripe-service";
 import { CustomsAndExportService } from "../../modules/crossborder-logistics/customs-service";
 import { TwoManHandlingDispatcher } from "../../modules/crossborder-logistics/two-man-handling";
 import { CloudTasksService } from "../../services/cloud-tasks";
+import { databaseService } from "../../db/database-service";
+import { invoiceService } from "../../services/invoice";
+import { emailService } from "../../services/email";
 import type { GenericOrder } from "@repo/types";
 
 export const checkoutRouter = Router();
@@ -27,6 +31,22 @@ checkoutRouter.post("/calculate-tax", (req: Request, res: Response) => {
 
   const taxResult = ossTaxService.calculateTax(subtotal, countryCode);
   return res.status(200).json(taxResult);
+});
+
+/**
+ * Stripe PaymentIntent Creation (Cards, iDEAL, Klarna)
+ */
+checkoutRouter.post("/stripe/create-payment-intent", async (req: Request, res: Response) => {
+  try {
+    const { amount, currency, metadata } = req.body;
+    if (typeof amount !== "number" || amount <= 0) {
+      return res.status(400).json({ error: "amount (number > 0) is required" });
+    }
+    const result = await stripeService.createPaymentIntent(amount, currency || "EUR", metadata || {});
+    return res.status(200).json(result);
+  } catch (err) {
+    return res.status(500).json({ error: (err as Error).message });
+  }
 });
 
 /**
@@ -62,7 +82,7 @@ checkoutRouter.post("/paypal/capture-order", async (req: Request, res: Response)
 });
 
 /**
- * Complete order with Google Pay, PayPal, or standard checkout
+ * Complete order with Google Pay, PayPal, Stripe, or standard checkout
  */
 checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
   try {
@@ -86,7 +106,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       0
     );
     const taxCalc = ossTaxService.calculateTax(subtotal, shippingAddress.countryCode);
-    
+
     // Generic dynamic shipping calculation (Free EU delivery over 100 EUR, or standard 9.90 EUR, or freight 89 EUR)
     const isBulky = cart.items.some((item: { parcels?: Array<{ weightKg: number }> }) =>
       item.parcels?.some((p) => p.weightKg > 30)
@@ -148,14 +168,17 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       createdAt: new Date().toISOString(),
     };
 
-    // 4. Generate Customs & Logistics Documents
+    // 4. Persist in Database Service (Postgres or In-Memory Demo Store)
+    await databaseService.saveOrder(order);
+
+    // 5. Generate Customs & Logistics Documents
     const atrData = customsService.generateAtrCertificateData(order);
     const packingList = customsService.generatePackingList(order);
-
-    // 5. Dispatch to logistics carrier network (DHL Express / Rhenus)
     const carrierDispatch = await twoManDispatcher.dispatchOrder(order, logisticsDetails || {});
 
-    // 6. Asynchronously trigger Cloud Tasks (Invoice PDF, Email Notification)
+    // 6. Trigger Simulated Email Confirmation & Enqueue Tasks
+    await emailService.sendOrderConfirmation(order);
+
     await cloudTasksService.enqueueTask({
       endpoint: "/api/tasks/invoice-pdf",
       payload: { orderNumber: order.orderNumber, customerEmail: order.customerEmail },
@@ -173,6 +196,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       order,
+      invoicePreviewUrl: `/api/checkout/orders/${order.orderNumber}/invoice`,
       customs: {
         atrDeclaration: atrData,
         packingList,
@@ -184,4 +208,43 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
     console.error("[Checkout Error]:", error);
     return res.status(500).json({ error: (error as Error).message });
   }
+});
+
+/**
+ * List all orders in demo/production database
+ */
+checkoutRouter.get("/orders", async (_req: Request, res: Response) => {
+  const orders = await databaseService.listOrders();
+  return res.status(200).json({ success: true, count: orders.length, orders });
+});
+
+/**
+ * Retrieve single order by orderNumber
+ */
+checkoutRouter.get("/orders/:orderNumber", async (req: Request, res: Response) => {
+  const order = await databaseService.getOrder(req.params.orderNumber);
+  if (!order) {
+    return res.status(404).json({ error: "Order not found" });
+  }
+  return res.status(200).json({ success: true, order });
+});
+
+/**
+ * Render printable EU VAT Invoice for order
+ */
+checkoutRouter.get("/orders/:orderNumber/invoice", async (req: Request, res: Response) => {
+  const order = await databaseService.getOrder(req.params.orderNumber);
+  if (!order) {
+    return res.status(404).send("Order not found");
+  }
+
+  const format = req.query.format;
+  if (format === "json") {
+    const details = invoiceService.buildInvoiceData(order);
+    return res.status(200).json(details);
+  }
+
+  const html = invoiceService.generateInvoiceHtml(order);
+  res.setHeader("Content-Type", "text/html; charset=utf-8");
+  return res.status(200).send(html);
 });

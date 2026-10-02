@@ -7,11 +7,29 @@ export const Navbar: React.FC<{ locale: SupportedLocale }> = ({ locale }) => {
   const dict = DICTIONARY[locale] || DICTIONARY.en;
   return (
     <header style={{ borderBottom: "1px solid #e5e7eb", backgroundColor: "#ffffff", position: "sticky", top: 0, zIndex: 50, backdropFilter: "blur(8px)" }}>
-      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "1rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
-        <Link href={`/${locale}`} style={{ textDecoration: "none", color: "#111827", fontWeight: 800, fontSize: "1.35rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <span>🇪🇺</span>
-          <span>{dict.brand}</span>
-        </Link>
+      <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "0.85rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <Link href={`/${locale}`} style={{ textDecoration: "none", color: "#111827", fontWeight: 800, fontSize: "1.35rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+            <span>🇪🇺</span>
+            <span>{dict.brand}</span>
+          </Link>
+          <span
+            title="GCP Serverless Architecture Demo • $0 Idle Cost • europe-west3 Frankfurt"
+            style={{
+              fontSize: "0.7rem",
+              fontWeight: 700,
+              backgroundColor: "#fef3c7",
+              color: "#92400e",
+              border: "1px solid #fde68a",
+              padding: "0.15rem 0.5rem",
+              borderRadius: "9999px",
+              cursor: "help",
+            }}
+          >
+            ⚡ GCP Demo
+          </span>
+        </div>
+
         <nav style={{ display: "flex", gap: "1.25rem", alignItems: "center", flexWrap: "wrap" }}>
           <Link href={`/${locale}#catalog`} style={{ textDecoration: "none", color: "#4b5563", fontSize: "0.95rem", fontWeight: 500 }}>
             {dict.navProducts}

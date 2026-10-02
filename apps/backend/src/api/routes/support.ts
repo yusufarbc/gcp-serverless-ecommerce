@@ -1,73 +1,11 @@
 import { Router, Request, Response } from "express";
 import { GoogleTranslationService } from "../../services/translation";
+import { databaseService } from "../../db/database-service";
+import { emailService } from "../../services/email";
 import type { CustomerInquiry } from "@repo/types";
 
 export const supportRouter = Router();
 const translationService = new GoogleTranslationService();
-
-// In-memory support inquiry store (initialized with realistic pan-EU customer tickets)
-const MOCK_TICKETS: CustomerInquiry[] = [
-  {
-    id: "tkt_it_001",
-    ticketNumber: "SUP-IT-2026-8941",
-    customerName: "Matteo Rossi",
-    customerEmail: "matteo.rossi@milano.it",
-    orderNumber: "ORD-EU-2026-7842",
-    countryCode: "IT",
-    subject: "Richiesta fattura con codice destinatario SDI e IVA 22%",
-    originalMessage: "Buongiorno, ho ricevuto le cuffie Aura Pro. Vorrei ricevere la fattura elettronica con il riepilogo dell'IVA italiana al 22% per la mia azienda a Milano. Grazie mille.",
-    sourceLanguage: "it",
-    status: "open",
-    category: "vat_invoice",
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    responses: [],
-  },
-  {
-    id: "tkt_de_002",
-    ticketNumber: "SUP-DE-2026-6120",
-    customerName: "Hannah Weber",
-    customerEmail: "h.weber@berlin.de",
-    orderNumber: "ORD-EU-2026-4412",
-    countryCode: "DE",
-    subject: "Sendungsverfolgung DHL Express für Luma Schreibtischlampe",
-    originalMessage: "Hallo Support-Team, wo ist meine bestellung? Die Sendungsverfolgung zeigt seit gestern den Status in Frankfurt. Wann wird die Lieferung zugestellt?",
-    sourceLanguage: "de",
-    status: "in_progress",
-    category: "order_status",
-    createdAt: new Date(Date.now() - 3600000 * 5).toISOString(),
-    responses: [],
-  },
-  {
-    id: "tkt_fr_003",
-    ticketNumber: "SUP-FR-2026-3394",
-    customerName: "Julien Dupont",
-    customerEmail: "j.dupont@paris.fr",
-    orderNumber: "ORD-EU-2026-1983",
-    countryCode: "FR",
-    subject: "Droit de rétractation de 14 jours - Demande de retour",
-    originalMessage: "Bonjour, je souhaite retourner le produit selon le droit de rétractation de 14 jours de l'Union Européenne. Pourriez-vous m'envoyer l'étiquette de retour pour le dépôt en Allemagne ?",
-    sourceLanguage: "fr",
-    status: "open",
-    category: "return_request",
-    createdAt: new Date(Date.now() - 3600000 * 8).toISOString(),
-    responses: [],
-  },
-  {
-    id: "tkt_es_004",
-    ticketNumber: "SUP-ES-2026-5519",
-    customerName: "Carlos Fernandez",
-    customerEmail: "carlos.f@madrid.es",
-    orderNumber: "ORD-EU-2026-9218",
-    countryCode: "ES",
-    subject: "Pregunta sobre la garantía del reloj Horizon",
-    originalMessage: "Hola, acabo de comprar el reloj Horizon Automático. ¿La garantía legal de 2 años de la UE cubre la resistencia al agua en piscina? Gracias.",
-    sourceLanguage: "es",
-    status: "open",
-    category: "product_inquiry",
-    createdAt: new Date(Date.now() - 3600000 * 12).toISOString(),
-    responses: [],
-  },
-];
 
 /**
  * GET /api/support/tickets
@@ -75,8 +13,9 @@ const MOCK_TICKETS: CustomerInquiry[] = [
  */
 supportRouter.get("/tickets", async (_req: Request, res: Response) => {
   try {
+    const rawTickets = await databaseService.getTickets();
     const translatedTickets = await Promise.all(
-      MOCK_TICKETS.map(async (ticket) => {
+      rawTickets.map(async (ticket) => {
         // If not already translated, translate subject and message to English
         if (!ticket.translatedMessageEn) {
           const transSubject = await translationService.translateText(ticket.subject, "en", ticket.sourceLanguage);
@@ -134,7 +73,18 @@ supportRouter.post("/tickets", async (req: Request, res: Response) => {
       responses: [],
     };
 
-    MOCK_TICKETS.unshift(newTicket);
+    await databaseService.saveTicket(newTicket);
+
+    // Send confirmation to customer via email service
+    await emailService.sendEmail({
+      to: customerEmail,
+      subject: `Support Ticket Created: ${newTicket.ticketNumber}`,
+      template: "support_reply",
+      data: {
+        ticketNumber: newTicket.ticketNumber,
+        message: `Thank you for contacting us. Your inquiry has been received and translated for our support desk. We will get back to you shortly.`,
+      },
+    });
 
     return res.status(201).json({
       success: true,
@@ -177,7 +127,7 @@ supportRouter.post("/tickets/:id/reply", async (req: Request, res: Response) => 
       return res.status(400).json({ error: "replyTextEn is required" });
     }
 
-    const ticket = MOCK_TICKETS.find((t) => t.id === id);
+    const ticket = await databaseService.getTicketById(id);
     if (!ticket) {
       return res.status(404).json({ error: "Ticket not found" });
     }
@@ -198,6 +148,19 @@ supportRouter.post("/tickets/:id/reply", async (req: Request, res: Response) => 
     ticket.responses = ticket.responses || [];
     ticket.responses.push(replyEntry);
     ticket.status = "resolved";
+
+    await databaseService.updateTicket(ticket);
+
+    // Send translated response to customer email
+    await emailService.sendEmail({
+      to: ticket.customerEmail,
+      subject: `Reply to Ticket ${ticket.ticketNumber}`,
+      template: "support_reply",
+      data: {
+        ticketNumber: ticket.ticketNumber,
+        replyText: translatedReply.translatedText,
+      },
+    });
 
     return res.status(200).json({
       success: true,

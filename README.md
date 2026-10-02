@@ -493,4 +493,33 @@ services:
 volumes:
   pgdata:
 
+---
+
+## ⚡ Serverless Demo Architecture & Placeholder Reference
+
+This repository is pre-configured to run as a **$0.00 idle cost demo project** on Google Cloud Platform (`europe-west3` Frankfurt). All services have graceful sandbox fallbacks when placeholder IDs are used.
+
+### Pre-Configured Placeholder IDs
+
+| Service | Environment Variable | Demo / Placeholder Value | How it Works in Demo Mode |
+| :--- | :--- | :--- | :--- |
+| **Database** | `DATABASE_URL` | `postgresql://postgres:PLACEHOLDER_DB_PASSWORD@34.141.100.10:5432/apex_ecommerce?sslmode=require` | In-memory & file-backed repository ($0 idle cost, zero database fees) |
+| **Stripe** | `STRIPE_SECRET_KEY` | `sk_test_placeholder_51NxXXXXXXXXXXXXXXXXXXXXXXXXXX` | Generates simulated PaymentIntents (`pi_demo_...`) with instant mock capture |
+| **Stripe** | `STRIPE_PUBLISHABLE_KEY` | `pk_test_placeholder_51NxXXXXXXXXXXXXXXXXXXXXXXXXXX` | Browser client token for local payment methods |
+| **PayPal** | `PAYPAL_CLIENT_ID` | `AeA_placeholder_client_id_for_demo` | Sandbox order creation and instant simulated buyer approval |
+| **Google Pay** | `GOOGLE_PAY_MERCHANT_ID` | `BCR2DN4T_PLACEHOLDER_MERCHANT_ID` | Web Payment Request API in `TEST` environment |
+| **Email** | `RESEND_API_KEY` | `re_placeholder_xxxxxxxxxxxxxxxxxxxxxxxx` | Logs SPF/DKIM compliant emails to in-memory outbox (`/api/tasks/email-outbox`) |
+| **Email** | `SENDGRID_API_KEY` | `SG.placeholder_xxxxxxxxxxxxxxxxxxxxxxxx` | Fallback transactional provider simulation |
+| **Translate** | `GOOGLE_TRANSLATE_API_KEY` | `AIzaSy_PLACEHOLDER_TRANSLATE_API_KEY` | High-fidelity translation engine for DE, FR, IT, ES, NL inquiries |
+| **sGTM** | `CONTAINER_CONFIG` | `aWQ9R1RNLVhYWFhYWA==` (`id=GTM-XXXXXX`) | Cloud Run server-side tagging container proxying to `ss.apexstore.eu` |
+| **EU OSS** | `EU_OSS_VAT_ID` | `DE345678901` | Calculates EU VAT (DE 19%, IT 22%, FR 20%) and generates printable invoices |
+
+### Switching to Live Production
+To go live with real credit card processing and real transactional emails:
+1. Update secrets in **Google Cloud Secret Manager** (`gcloud secrets versions add ...`).
+2. Update `backend-env.prod.yaml` with your live Cloud SQL instance socket or database URL.
+3. Replace `STRIPE_SECRET_KEY` with your live Stripe key (`sk_live_...`).
+4. Replace `PAYPAL_CLIENT_ID` and set `PAYPAL_MODE=live`.
+5. Point your domain registrar to Google Cloud DNS name servers (`apexstore.eu`).
+
 ```
