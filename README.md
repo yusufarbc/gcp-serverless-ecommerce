@@ -526,6 +526,9 @@ To go live with real credit card processing and real transactional emails:
 
 ## 🛡️ DevSecOps & Security Automation Pipeline
 
+> 📖 **Complete Architecture & Technical Documentation:**  
+> For the comprehensive technical specification, tool configurations, remediation playbook, and compliance mapping (GDPR, EU Cyber Resilience Act, PCI-DSS), see the dedicated [DevSecOps Pipeline Architecture Guide](docs/devsecops-pipeline.md).
+
 The repository integrates a comprehensive, enterprise-grade, **100% free and open-source DevSecOps pipeline** running automatically on every push, pull request, and weekly schedule via GitHub Actions:
 
 | Security Domain | Tool | Scope & Purpose | Output & Artifacts |
@@ -544,4 +547,4 @@ gh workflow run "DevSecOps Pipeline" --ref main
 
 # Trigger OWASP ZAP DAST Scan against Staging
 gh workflow run "DAST Security Pipeline (OWASP ZAP)" --ref staging
-```
+```
