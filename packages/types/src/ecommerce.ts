@@ -103,6 +103,7 @@ export interface GenericCart {
 export interface GenericOrder {
   id: string;
   orderNumber: string;
+  accessToken?: string; // Cryptographically secure token to protect against BOLA/IDOR
   cartId: string;
   items: CartItem[];
   customerEmail: string;

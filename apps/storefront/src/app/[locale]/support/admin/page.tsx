@@ -27,7 +27,12 @@ export default function SupportAdminPage() {
   const fetchTickets = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/support/tickets");
+      const adminKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || "apex-admin-sec-key-2026";
+      const res = await fetch("/api/support/tickets", {
+        headers: {
+          "Authorization": `Bearer ${adminKey}`,
+        },
+      });
       if (res.ok) {
         const data = await res.json();
         setTickets(data.tickets || []);
@@ -53,9 +58,13 @@ export default function SupportAdminPage() {
 
     setReplyLoadingMap((prev) => ({ ...prev, [ticketId]: true }));
     try {
+      const adminKey = process.env.NEXT_PUBLIC_ADMIN_API_KEY || "apex-admin-sec-key-2026";
       const res = await fetch(`/api/support/tickets/${ticketId}/reply`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${adminKey}`,
+        },
         body: JSON.stringify({ replyTextEn: text }),
       });
 

@@ -58,8 +58,12 @@ app.get("/", (_req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`[Core API] Serverless Commerce Engine listening on port ${port}`);
-  console.log(`[Core API] Region: ${process.env.GCP_REGION || "europe-west3"}`);
-});
+export { app };
+
+if (process.env.NODE_ENV !== "test") {
+  app.listen(port, () => {
+    console.log(`[Core API] Serverless Commerce Engine listening on port ${port}`);
+    console.log(`[Core API] Region: ${process.env.GCP_REGION || "europe-west3"}`);
+  });
+}
 

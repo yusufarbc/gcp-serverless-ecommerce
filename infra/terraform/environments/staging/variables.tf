@@ -22,3 +22,15 @@ variable "sgtm_container_config" {
   type    = string
   default = "GTM-STAGING"
 }
+
+variable "backend_image_tag" {
+  type        = string
+  description = "Immutable container image tag (e.g. git commit SHA or release tag) for backend Cloud Run"
+  default     = "staging"
+}
+
+variable "storefront_image_tag" {
+  type        = string
+  description = "Immutable container image tag (e.g. git commit SHA or release tag) for storefront Cloud Run"
+  default     = "staging"
+}

@@ -51,7 +51,7 @@ module "backend_run" {
   service_name     = "commerce-core-api"
   project_id       = var.project_id
   region           = var.region
-  image            = "${module.artifact_registry.repository_url}/medusa-backend:latest"
+  image            = "${module.artifact_registry.repository_url}/medusa-backend:${var.backend_image_tag}"
   min_instances    = 0
   max_instances    = 3
   memory_limit     = "1Gi"
@@ -75,7 +75,7 @@ module "storefront_run" {
   service_name  = "commerce-storefront-pwa"
   project_id    = var.project_id
   region        = var.region
-  image         = "${module.artifact_registry.repository_url}/nextjs-storefront:latest"
+  image         = "${module.artifact_registry.repository_url}/nextjs-storefront:${var.storefront_image_tag}"
   min_instances = 0
   max_instances = 5
   memory_limit  = "512Mi"
