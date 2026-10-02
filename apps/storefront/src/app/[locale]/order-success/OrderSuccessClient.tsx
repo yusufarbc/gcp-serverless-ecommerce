@@ -13,9 +13,12 @@ export const OrderSuccessClient: React.FC<Props> = ({ locale, dict }) => {
   const searchParams = useSearchParams();
   const orderNumber = searchParams?.get("orderNumber") || "ORD-EU-2026-7842";
   const country = searchParams?.get("country") || (locale === "it" ? "IT" : locale === "fr" ? "FR" : "DE");
+  const token = searchParams?.get("token") || (orderNumber === "ORD-EU-2026-7842" ? "demo-sec-token-7842-eu" : "");
 
   const apiUrl = process.env.NEXT_PUBLIC_CORE_API_URL || "";
-  const invoiceUrl = `${apiUrl}/api/checkout/orders/${orderNumber}/invoice`;
+  const invoiceUrl = token
+    ? `${apiUrl}/api/checkout/orders/${encodeURIComponent(orderNumber)}/invoice?token=${encodeURIComponent(token)}`
+    : `${apiUrl}/api/checkout/orders/${encodeURIComponent(orderNumber)}/invoice`;
 
   return (
     <div style={{ maxWidth: "680px", margin: "3rem auto", padding: "0 1.5rem" }}>

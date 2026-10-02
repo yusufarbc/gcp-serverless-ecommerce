@@ -1,4 +1,4 @@
-import type { GenericOrder, CustomerInquiry, GenericProduct } from "@repo/types";
+import type { GenericOrder, CustomerInquiry, GenericProduct, ProductVariant } from "@repo/types";
 import { MOCK_CATALOG } from "../api/routes/catalog";
 
 export interface EmailOutboxItem {
@@ -126,6 +126,7 @@ export class DatabaseService {
     const demoOrder: GenericOrder = {
       id: "ord_demo_001",
       orderNumber: "ORD-EU-2026-7842",
+      accessToken: "demo-sec-token-7842-eu",
       cartId: "cart_demo_01",
       items: [
         {
@@ -219,6 +220,26 @@ export class DatabaseService {
     return Array.from(this.orders.values()).sort(
       (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+  }
+
+  // Catalog API (Authoritative Server-Side Truth to prevent price tampering)
+  public async getProductById(productId: string): Promise<GenericProduct | null> {
+    return this.products.get(productId) || null;
+  }
+
+  public async getProductVariant(
+    productId: string,
+    variantId: string
+  ): Promise<{ product: GenericProduct; variant: ProductVariant } | null> {
+    const product = this.products.get(productId);
+    if (!product) return null;
+    const variant = product.variants.find((v) => v.id === variantId);
+    if (!variant) return null;
+    return { product, variant };
+  }
+
+  public async getProducts(): Promise<GenericProduct[]> {
+    return Array.from(this.products.values());
   }
 
   // Support Tickets API

@@ -1,4 +1,5 @@
 import { Router, Request, Response } from "express";
+import crypto from "crypto";
 import { UnionOssTaxService } from "../../modules/tax-provider/oss-tax-service";
 import { GooglePayPaymentService } from "../../modules/payment-googlepay/googlepay-service";
 import { PayPalPaymentService } from "../../modules/payment-paypal/paypal-service";
@@ -9,7 +10,9 @@ import { CloudTasksService } from "../../services/cloud-tasks";
 import { databaseService } from "../../db/database-service";
 import { invoiceService } from "../../services/invoice";
 import { emailService } from "../../services/email";
-import type { GenericOrder } from "@repo/types";
+import { adminAuthMiddleware, orderAccessMiddleware } from "../../middleware/auth";
+import { idempotencyService } from "../../services/idempotency";
+import type { GenericOrder, CartItem } from "@repo/types";
 
 export const checkoutRouter = Router();
 const ossTaxService = new UnionOssTaxService();
@@ -83,8 +86,39 @@ checkoutRouter.post("/paypal/capture-order", async (req: Request, res: Response)
 
 /**
  * Complete order with Google Pay, PayPal, Stripe, or standard checkout
+ * Implements:
+ * 1. Server-Side Price & Product Verification (Prevents Price Tampering)
+ * 2. Idempotency Key Handling (Prevents Duplicate Payments & Request Storms)
+ * 3. Cryptographic Order Access Token Generation (Prevents BOLA / IDOR)
  */
 checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
+  const idempotencyKey =
+    (req.headers["idempotency-key"] as string) || (req.body?.idempotencyKey as string) || "";
+
+  if (idempotencyKey) {
+    const existing = idempotencyService.get(idempotencyKey);
+    if (existing) {
+      if (existing.status === "in_progress") {
+        return res.status(409).json({
+          error: "A checkout request with this Idempotency-Key is currently being processed. Please wait.",
+          code: "IDEMPOTENCY_IN_PROGRESS",
+        });
+      }
+      if (existing.status === "completed") {
+        res.setHeader("Idempotent-Replay", "true");
+        return res.status(existing.statusCode || 200).json(existing.body);
+      }
+    }
+
+    const locked = idempotencyService.lock(idempotencyKey);
+    if (!locked) {
+      return res.status(409).json({
+        error: "A checkout request with this Idempotency-Key is currently being processed.",
+        code: "IDEMPOTENCY_LOCKED",
+      });
+    }
+  }
+
   try {
     const {
       cart,
@@ -96,25 +130,63 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       logisticsDetails,
     } = req.body;
 
-    if (!cart || !shippingAddress) {
-      return res.status(400).json({ error: "cart and shippingAddress are required" });
+    if (!cart || !Array.isArray(cart.items) || cart.items.length === 0 || !shippingAddress) {
+      if (idempotencyKey) idempotencyService.release(idempotencyKey);
+      return res.status(400).json({ error: "cart (with non-empty items array) and shippingAddress are required" });
     }
 
-    // 1. Calculate dynamic Union OSS Tax
-    const subtotal = cart.items.reduce(
-      (sum: number, item: { price: number; quantity: number }) => sum + item.price * item.quantity,
-      0
-    );
+    // 1. Authoritative Server-Side Product & Price Validation (Remediates Client-Side Price Tampering)
+    const verifiedItems: CartItem[] = [];
+    let subtotal = 0;
+
+    for (const item of cart.items) {
+      const { productId, variantId, quantity } = item;
+      const qty = Number(quantity);
+
+      if (!productId || !variantId || !Number.isInteger(qty) || qty <= 0 || qty > 100) {
+        if (idempotencyKey) idempotencyService.release(idempotencyKey);
+        return res.status(400).json({
+          error: `Invalid cart item parameters for productId=${productId}, variantId=${variantId}, quantity=${quantity}`,
+        });
+      }
+
+      // Fetch canonical product and variant directly from server catalog / database
+      const catalogRecord = await databaseService.getProductVariant(productId, variantId);
+      if (!catalogRecord) {
+        if (idempotencyKey) idempotencyService.release(idempotencyKey);
+        return res.status(400).json({
+          error: `Product or variant not found in official catalog: productId=${productId}, variantId=${variantId}`,
+        });
+      }
+
+      const { product, variant } = catalogRecord;
+
+      // Price and parcel specifications MUST come strictly from server source-of-truth
+      const authoritativePrice = variant.price;
+      const itemSubtotal = Math.round(authoritativePrice * qty * 100) / 100;
+      subtotal = Math.round((subtotal + itemSubtotal) * 100) / 100;
+
+      verifiedItems.push({
+        productId: product.id,
+        variantId: variant.id,
+        title: product.title.en || variant.title,
+        price: authoritativePrice, // Verified server price
+        quantity: qty,
+        parcels: variant.parcels || [], // Verified server parcel dimensions
+      });
+    }
+
+    // 2. Calculate dynamic Union OSS Tax from server-verified subtotal
     const taxCalc = ossTaxService.calculateTax(subtotal, shippingAddress.countryCode);
 
-    // Generic dynamic shipping calculation (Free EU delivery over 100 EUR, or standard 9.90 EUR, or freight 89 EUR)
-    const isBulky = cart.items.some((item: { parcels?: Array<{ weightKg: number }> }) =>
+    // Generic dynamic shipping calculation strictly based on verified parcel data
+    const isBulky = verifiedItems.some((item) =>
       item.parcels?.some((p) => p.weightKg > 30)
     );
     const shippingTotal = isBulky ? 89.0 : subtotal >= 100 ? 0.0 : 9.90;
     const grandTotal = Math.round((subtotal + taxCalc.taxAmount + shippingTotal) * 100) / 100;
 
-    // 2. Process Payment (Google Pay Tokenization, PayPal, or Gateway)
+    // 3. Process Payment (Google Pay Tokenization, PayPal, or Gateway)
     let transactionId = `txn_manual_${Date.now()}`;
     let paypalDetails = undefined;
 
@@ -126,6 +198,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
         `ORD_${Date.now()}`
       );
       if (!paymentResult.success) {
+        if (idempotencyKey) idempotencyService.release(idempotencyKey);
         return res.status(402).json({ error: "Google Pay verification failed", details: paymentResult.error });
       }
       transactionId = paymentResult.transactionId;
@@ -133,6 +206,7 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       const idToCapture = paypalOrderId || `PAYPAL_${Date.now()}`;
       const captureResult = await payPalService.captureOrder(idToCapture);
       if (!captureResult.success) {
+        if (idempotencyKey) idempotencyService.release(idempotencyKey);
         return res.status(402).json({ error: "PayPal payment capture failed", details: captureResult.error });
       }
       transactionId = captureResult.captureId || idToCapture;
@@ -144,13 +218,16 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       };
     }
 
-    // 3. Construct Generic Order Object
+    // 4. Construct Generic Order Object with Cryptographic Access Token (Remediates BOLA / IDOR)
     const orderNumber = `ORD-EU-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const accessToken = crypto.randomBytes(32).toString("hex");
+
     const order: GenericOrder = {
       id: `ord_${Date.now()}`,
       orderNumber,
+      accessToken, // Unguessable 256-bit token for guest verification & invoice access
       cartId: cart.id || "cart_temp",
-      items: cart.items,
+      items: verifiedItems,
       customerEmail: shippingAddress.email,
       customerPhone: shippingAddress.phone,
       shippingAddress,
@@ -168,15 +245,15 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       createdAt: new Date().toISOString(),
     };
 
-    // 4. Persist in Database Service (Postgres or In-Memory Demo Store)
+    // 5. Persist in Database Service
     await databaseService.saveOrder(order);
 
-    // 5. Generate Customs & Logistics Documents
+    // 6. Generate Customs & Logistics Documents
     const atrData = customsService.generateAtrCertificateData(order);
     const packingList = customsService.generatePackingList(order);
     const carrierDispatch = await twoManDispatcher.dispatchOrder(order, logisticsDetails || {});
 
-    // 6. Trigger Simulated Email Confirmation & Enqueue Tasks
+    // 7. Trigger Simulated Email Confirmation & Enqueue Tasks
     await emailService.sendOrderConfirmation(order);
 
     await cloudTasksService.enqueueTask({
@@ -193,36 +270,50 @@ checkoutRouter.post("/process-order", async (req: Request, res: Response) => {
       },
     });
 
-    return res.status(201).json({
+    const invoicePreviewUrl = `/api/checkout/orders/${order.orderNumber}/invoice?token=${accessToken}`;
+
+    const responsePayload = {
       success: true,
       order,
-      invoicePreviewUrl: `/api/checkout/orders/${order.orderNumber}/invoice`,
+      accessToken,
+      invoicePreviewUrl,
       customs: {
         atrDeclaration: atrData,
         packingList,
       },
       logistics: carrierDispatch,
       ossTax: taxCalc,
-    });
+    };
+
+    if (idempotencyKey) {
+      idempotencyService.complete(idempotencyKey, 201, responsePayload);
+    }
+
+    return res.status(201).json(responsePayload);
   } catch (error) {
+    if (idempotencyKey) {
+      idempotencyService.release(idempotencyKey);
+    }
     console.error("[Checkout Error]:", error);
     return res.status(500).json({ error: (error as Error).message });
   }
 });
 
 /**
- * List all orders in demo/production database
+ * List all orders in database
+ * Restricted to authenticated Admin to prevent BOLA / IDOR enumeration
  */
-checkoutRouter.get("/orders", async (_req: Request, res: Response) => {
+checkoutRouter.get("/orders", adminAuthMiddleware, async (_req: Request, res: Response) => {
   const orders = await databaseService.listOrders();
   return res.status(200).json({ success: true, count: orders.length, orders });
 });
 
 /**
  * Retrieve single order by orderNumber
+ * Protected by orderAccessMiddleware (requires valid accessToken or Admin authorization)
  */
-checkoutRouter.get("/orders/:orderNumber", async (req: Request, res: Response) => {
-  const order = await databaseService.getOrder(req.params.orderNumber);
+checkoutRouter.get("/orders/:orderNumber", orderAccessMiddleware, async (req: Request, res: Response) => {
+  const order = (req as any).order || (await databaseService.getOrder(req.params.orderNumber));
   if (!order) {
     return res.status(404).json({ error: "Order not found" });
   }
@@ -231,9 +322,10 @@ checkoutRouter.get("/orders/:orderNumber", async (req: Request, res: Response) =
 
 /**
  * Render printable EU VAT Invoice for order
+ * Protected by orderAccessMiddleware (requires valid accessToken or Admin authorization)
  */
-checkoutRouter.get("/orders/:orderNumber/invoice", async (req: Request, res: Response) => {
-  const order = await databaseService.getOrder(req.params.orderNumber);
+checkoutRouter.get("/orders/:orderNumber/invoice", orderAccessMiddleware, async (req: Request, res: Response) => {
+  const order = (req as any).order || (await databaseService.getOrder(req.params.orderNumber));
   if (!order) {
     return res.status(404).send("Order not found");
   }

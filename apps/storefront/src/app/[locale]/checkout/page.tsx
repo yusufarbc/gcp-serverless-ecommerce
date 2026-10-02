@@ -43,22 +43,31 @@ function CheckoutContent() {
 
   const handleOrderSuccess = async (paymentDetails?: any) => {
     const generatedOrderNumber = `ORD-EU-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const idempotencyKey =
+      typeof crypto !== "undefined" && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `idem_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    let orderNumber = generatedOrderNumber;
+    let accessToken = "";
+
     try {
       const apiUrl = process.env.NEXT_PUBLIC_CORE_API_URL || "";
-      await fetch(`${apiUrl}/api/checkout/process-order`, {
+      const res = await fetch(`${apiUrl}/api/checkout/process-order`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyKey,
+        },
         body: JSON.stringify({
           cart: {
             id: `cart_${Date.now()}`,
+            // Send only product identity and quantity; price is strictly server-verified
             items: [
               {
                 productId: product.id,
                 variantId: product.variants[0].id,
-                title: product.title[locale] || product.title.en,
-                price: subtotal,
                 quantity: 1,
-                parcels: product.variants[0].parcels || [],
               },
             ],
           },
@@ -76,10 +85,20 @@ function CheckoutContent() {
           paypalOrderId: paymentDetails?.orderId,
         }),
       });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.order?.orderNumber) {
+          orderNumber = data.order.orderNumber;
+        }
+        accessToken = data.accessToken || data.order?.accessToken || "";
+      }
     } catch (e) {
       console.warn("Could not post order to backend:", e);
     }
-    router.push(`/${locale}/order-success?orderNumber=${generatedOrderNumber}&country=${countryCode}`);
+
+    const tokenQuery = accessToken ? `&token=${encodeURIComponent(accessToken)}` : "";
+    router.push(`/${locale}/order-success?orderNumber=${encodeURIComponent(orderNumber)}${tokenQuery}&country=${countryCode}`);
   };
 
   return (

@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import { GoogleTranslationService } from "../../services/translation";
 import { databaseService } from "../../db/database-service";
 import { emailService } from "../../services/email";
+import { adminAuthMiddleware } from "../../middleware/auth";
 import type { CustomerInquiry } from "@repo/types";
 
 export const supportRouter = Router();
@@ -10,8 +11,9 @@ const translationService = new GoogleTranslationService();
 /**
  * GET /api/support/tickets
  * Lists all tickets with automatic translation into English
+ * Restricted to internal support staff / admin to prevent BOLA / IDOR PII exposure
  */
-supportRouter.get("/tickets", async (_req: Request, res: Response) => {
+supportRouter.get("/tickets", adminAuthMiddleware, async (_req: Request, res: Response) => {
   try {
     const rawTickets = await databaseService.getTickets();
     const translatedTickets = await Promise.all(
@@ -117,8 +119,9 @@ supportRouter.post("/translate", async (req: Request, res: Response) => {
 /**
  * POST /api/support/tickets/:id/reply
  * Support agent writes a reply in English, and it is automatically translated back into the customer's language
+ * Restricted to authenticated support staff / admin
  */
-supportRouter.post("/tickets/:id/reply", async (req: Request, res: Response) => {
+supportRouter.post("/tickets/:id/reply", adminAuthMiddleware, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { replyTextEn } = req.body;

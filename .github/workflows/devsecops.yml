@@ -93,7 +93,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Run Trivy vulnerability scanner on dependencies
+      - name: Run Trivy vulnerability scanner on dependencies (SARIF Report)
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: "fs"
@@ -111,6 +111,17 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
         continue-on-error: true
+
+      - name: Enforce Security Gate (Fail on fixable CRITICAL vulnerabilities)
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          scanners: "vuln"
+          severity: "CRITICAL"
+          ignore-unfixed: true
+          exit-code: "1"
+          format: "table"
 
   # ----------------------------------------------------------------------------
   # 5. SBOM: Software Bill of Materials (CycloneDX & SPDX)
