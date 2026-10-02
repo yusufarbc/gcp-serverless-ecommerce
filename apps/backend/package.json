@@ -7,7 +7,8 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "tsx watch src/main.ts",
-    "lint": "eslint src --ext .ts"
+    "lint": "eslint src --ext .ts",
+    "clean": "node -e \"try { require('fs').rmSync('dist', { recursive: true, force: true }); } catch {}\""
   },
   "dependencies": {
     "@google-cloud/storage": "^8.2.0",
