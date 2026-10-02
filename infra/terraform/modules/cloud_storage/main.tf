@@ -18,7 +18,7 @@ resource "google_storage_bucket" "bucket" {
       type = "Delete"
     }
     condition {
-      age        = 14
+      age            = 14
       matches_prefix = ["temp/"]
     }
   }
@@ -30,7 +30,7 @@ resource "google_storage_bucket" "bucket" {
       storage_class = "COLDLINE"
     }
     condition {
-      age        = 90
+      age            = 90
       matches_prefix = ["invoices/"]
     }
   }

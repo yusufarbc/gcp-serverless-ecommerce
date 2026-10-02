@@ -4,10 +4,10 @@ resource "random_password" "db_password" {
 }
 
 resource "google_sql_database_instance" "instance" {
-  name             = var.instance_name
-  project          = var.project_id
-  region           = var.region
-  database_version = "POSTGRES_16"
+  name                = var.instance_name
+  project             = var.project_id
+  region              = var.region
+  database_version    = "POSTGRES_16"
   deletion_protection = false # Set to true in strict production
 
   settings {

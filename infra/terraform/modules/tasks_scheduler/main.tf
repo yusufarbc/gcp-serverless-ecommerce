@@ -9,10 +9,10 @@ resource "google_cloud_tasks_queue" "ecommerce_queue" {
   }
 
   retry_config {
-    max_attempts       = 5
-    min_backoff        = "0.5s"
-    max_backoff        = "300s"
-    max_doublings      = 5
+    max_attempts  = 5
+    min_backoff   = "0.5s"
+    max_backoff   = "300s"
+    max_doublings = 5
   }
 }
 
