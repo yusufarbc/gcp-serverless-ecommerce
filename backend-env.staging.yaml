@@ -1,0 +1,8 @@
+NODE_ENV: "staging"
+ENVIRONMENT: "staging"
+GCP_PROJECT_ID: "gcp-serverless-ecommerce"
+GCP_REGION: "europe-west3"
+GCS_BUCKET_NAME: "gcp-serverless-ecommerce-media-staging"
+STORE_NAME: "Apex Direct Europe [Staging]"
+CLOUD_TASKS_QUEUE: "ecommerce-tasks-staging"
+PAYPAL_MODE: "sandbox"

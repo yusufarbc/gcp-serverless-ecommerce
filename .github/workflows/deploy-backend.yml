@@ -1,10 +1,11 @@
 name: Deploy Backend to Cloud Run
 on:
   push:
-    branches: [main]
+    branches: [main, production, staging]
     paths:
       - "apps/backend/**"
       - "packages/**"
+      - "backend-env*.yaml"
 permissions:
   contents: read
   id-token: write
@@ -12,32 +13,58 @@ env:
   PROJECT_ID: gcp-serverless-ecommerce
   REGION: europe-west3
   GAR_REPO: apps
-  SERVICE_NAME: commerce-core-api
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
+      - name: Determine Environment Variables
+        id: set-env
+        run: |
+          if [ "${{ github.ref_name }}" = "staging" ]; then
+            echo "service_name=commerce-core-api-staging" >> $GITHUB_OUTPUT
+            echo "env_file=backend-env.staging.yaml" >> $GITHUB_OUTPUT
+            echo "image_tag=staging" >> $GITHUB_OUTPUT
+            echo "max_instances=2" >> $GITHUB_OUTPUT
+          else
+            echo "service_name=commerce-core-api" >> $GITHUB_OUTPUT
+            echo "env_file=backend-env.prod.yaml" >> $GITHUB_OUTPUT
+            echo "image_tag=latest" >> $GITHUB_OUTPUT
+            echo "max_instances=3" >> $GITHUB_OUTPUT
+          fi
+
       - uses: google-github-actions/auth@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
       - uses: google-github-actions/setup-gcloud@v2
-      - run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-      - run: |
+
+      - name: Configure Docker
+        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build & Push Backend Container Image
+        run: |
+          IMAGE_TAG="${{ steps.set-env.outputs.image_tag }}"
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/medusa-backend:${{ github.sha }}"
-          docker build -t $IMAGE -t "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/medusa-backend:latest" -f apps/backend/Dockerfile .
+          docker build -t $IMAGE -t "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/medusa-backend:$IMAGE_TAG" -f apps/backend/Dockerfile .
           docker push --all-tags "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/medusa-backend"
-      - run: |
+
+      - name: Deploy to Cloud Run
+        run: |
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/medusa-backend:${{ github.sha }}"
-          gcloud run deploy ${{ env.SERVICE_NAME }} \
+          gcloud run deploy ${{ steps.set-env.outputs.service_name }} \
             --image=$IMAGE \
             --region=${{ env.REGION }} \
             --platform=managed \
             --allow-unauthenticated \
+            --env-vars-file=${{ steps.set-env.outputs.env_file }} \
+            --port=9000 \
             --min-instances=0 \
-            --max-instances=3 \
+            --max-instances=${{ steps.set-env.outputs.max_instances }} \
             --memory=1Gi \
             --cpu=1 \
-            --concurrency=40
+            --concurrency=40 \
+            --project=${{ env.PROJECT_ID }}
