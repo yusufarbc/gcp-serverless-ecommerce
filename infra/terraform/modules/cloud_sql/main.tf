@@ -11,11 +11,11 @@ resource "google_sql_database_instance" "instance" {
   deletion_protection = false # Set to true in strict production
 
   settings {
-    tier                        = var.tier
-    disk_size                   = 10
-    disk_type                   = "PD_SSD"
-    disk_autoresize             = false
-    availability_type           = "ZONAL" # Single zone to minimize costs
+    tier              = var.tier
+    disk_size         = 10
+    disk_type         = "PD_SSD"
+    disk_autoresize   = false
+    availability_type = "ZONAL" # Single zone to minimize costs
 
     ip_configuration {
       ipv4_enabled    = false
