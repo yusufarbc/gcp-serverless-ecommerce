@@ -1,0 +1,27 @@
+# Gitleaks Configuration for European Serverless Commerce
+# Defines detection rules and allows intentional demo placeholder credentials
+
+title = "Apex Direct Gitleaks Configuration"
+
+[allowlist]
+description = "Allow intentional mock/demo placeholder keys used in documentation and zero-cost simulation"
+regexes = [
+  '''(?i)placeholder''',
+  '''sk_test_placeholder_51Nx[A-Za-z0-9]+''',
+  '''pk_test_placeholder_51Nx[A-Za-z0-9]+''',
+  '''whsec_placeholder_[A-Za-z0-9]+''',
+  '''re_placeholder_[A-Za-z0-9]+''',
+  '''SG\.placeholder_[A-Za-z0-9]+''',
+  '''AIzaSy_PLACEHOLDER_[A-Za-z0-9_]+''',
+  '''BCR2DN4T_PLACEHOLDER_[A-Za-z0-9_]+''',
+  '''AeA_placeholder_client_id_for_demo''',
+  '''EL_placeholder_secret_for_demo''',
+  '''aWQ9R1RNLVhYWFhYWA==''',
+]
+paths = [
+  '''\.env\.example$''',
+  '''README\.md$''',
+  '''backend-env\..*\.yaml$''',
+  '''storefront-env\..*\.yaml$''',
+  '''scripts/verify-envs\.js$''',
+]

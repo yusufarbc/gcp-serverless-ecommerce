@@ -1,0 +1,10 @@
+# Paths ignored by Semgrep SAST scans
+node_modules/
+.next/
+dist/
+build/
+.turbo/
+coverage/
+*.min.js
+*.bundle.js
+package-lock.json
