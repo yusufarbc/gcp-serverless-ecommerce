@@ -1,0 +1,8 @@
+NODE_ENV: "production"
+ENVIRONMENT: "production"
+GCP_PROJECT_ID: "gcp-serverless-ecommerce"
+GCP_REGION: "europe-west3"
+GCS_BUCKET_NAME: "gcp-serverless-ecommerce-media"
+STORE_NAME: "Apex Direct Europe"
+CLOUD_TASKS_QUEUE: "ecommerce-tasks"
+PAYPAL_MODE: "live"
