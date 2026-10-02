@@ -16,6 +16,15 @@ resource "google_storage_bucket" "bucket" {
     enabled = true
   }
 
+  logging {
+    log_bucket        = "${var.bucket_name}-logs"
+    log_object_prefix = "storage-logs"
+  }
+
+  encryption {
+    default_kms_key_name = "projects/${var.project_id}/locations/${var.region}/keyRings/commerce-ring/cryptoKeys/storage-key"
+  }
+
   cors {
     origin          = ["*"]
     method          = ["GET", "HEAD", "OPTIONS"]

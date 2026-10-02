@@ -1,0 +1,4 @@
+# Trivy ignore configuration for open-source e-commerce demo
+# Public read access on catalog assets and GMC product feeds is intentionally enabled
+AVD-GCP-0001
+GCP-0001

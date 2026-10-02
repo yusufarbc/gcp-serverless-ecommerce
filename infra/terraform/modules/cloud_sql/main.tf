@@ -45,6 +45,16 @@ resource "google_sql_database_instance" "instance" {
       name  = "log_disconnections"
       value = "on"
     }
+
+    database_flags {
+      name  = "log_lock_waits"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_checkpoints"
+      value = "on"
+    }
   }
 
   depends_on = [var.private_vpc_connection]

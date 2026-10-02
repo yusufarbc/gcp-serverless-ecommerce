@@ -102,6 +102,7 @@ jobs:
           severity: "CRITICAL,HIGH"
           format: "sarif"
           output: "trivy-results.sarif"
+          trivyignores: ".trivyignore"
           exit-code: "0"
 
       - name: Upload Trivy SARIF Report
