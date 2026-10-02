@@ -32,18 +32,12 @@ jobs:
         with:
           terraform_version: 1.8.5
 
-      - uses: google-github-actions/auth@v2
-        with:
-          project_id: ${{ env.PROJECT_ID }}
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
       - name: Validate Terraform Format
         run: terraform fmt -check -recursive infra/terraform
 
-      - name: Terraform Init
+      - name: Terraform Init (Offline / No Backend)
         working-directory: ${{ steps.set-tf-dir.outputs.tf_root }}
-        run: terraform init
+        run: terraform init -backend=false
 
       - name: Terraform Validate
         working-directory: ${{ steps.set-tf-dir.outputs.tf_root }}
