@@ -2,8 +2,8 @@ import { Router, Request, Response } from "express";
 import { UnionOssTaxService } from "../../modules/tax-provider/oss-tax-service";
 import { GooglePayPaymentService } from "../../modules/payment-googlepay/googlepay-service";
 import { PayPalPaymentService } from "../../modules/payment-paypal/paypal-service";
-import { CustomsAndExportService } from "../../modules/furniture-logistics/customs-service";
-import { TwoManHandlingDispatcher } from "../../modules/furniture-logistics/two-man-handling";
+import { CustomsAndExportService } from "../../modules/crossborder-logistics/customs-service";
+import { TwoManHandlingDispatcher } from "../../modules/crossborder-logistics/two-man-handling";
 import { CloudTasksService } from "../../services/cloud-tasks";
 import type { GenericOrder } from "@repo/types";
 

@@ -22,10 +22,10 @@ export interface GmcFeedItem {
   shipping_length?: string; // e.g. "180 cm"
   shipping_width?: string;
   shipping_height?: string;
-  transit_time_label?: string; // e.g. "standard_furniture_eu"
-  custom_label_0?: string; // e.g. "EUDR_COMPLIANT"
-  custom_label_1?: string; // e.g. "HS_9401"
-  custom_label_2?: string; // e.g. "2_MAN_HANDLING"
+  transit_time_label?: string; // e.g. "standard_express_eu"
+  custom_label_0?: string; // e.g. "EU_COMPLIANT"
+  custom_label_1?: string; // e.g. "HS_8518"
+  custom_label_2?: string; // e.g. "STANDARD_PARCEL"
 }
 
 export interface GmcFeedConfig {

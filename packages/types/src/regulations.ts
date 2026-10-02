@@ -18,7 +18,7 @@ export interface EudrMetadata {
 // Multi-box / Parcel Desi and Dimensions for Freight Logistics
 export interface ParcelItem {
   boxNumber: number;
-  boxDescription: string; // e.g. "Headboard", "Base", "Hardware"
+  boxDescription: string; // e.g. "Retail Packaging", "Main Unit", "Accessories"
   weightKg: number;
   lengthCm: number;
   widthCm: number;
@@ -49,7 +49,7 @@ export interface OmnibusPriceHistory {
 
 // Customs & Export Documentation Data
 export interface CustomsMetadata {
-  hsCode: string; // Armonize Sistem / GTIP kodu (e.g., 9401.61.00 for upholstered wood seats)
+  hsCode: string; // Harmonized System (HS) Code (e.g., 8518.30.00 for headphones, 4202.92.00 for bags)
   countryOfOrigin: string; // "TR"
   atrEligible: boolean; // Turkey-EU Customs Union A.TR Certificate eligibility
   grossWeightKg: number;
