@@ -3,22 +3,26 @@ import type { GenericProduct } from "@repo/types";
 
 export const catalogRouter = Router();
 
-// Generic multi-category D2C catalog for EU cross-border commerce
+// Generic multi-category D2C catalog for EU cross-border commerce (EN, DE, FR, IT, ES, NL)
 export const MOCK_CATALOG: GenericProduct[] = [
   {
     id: "prod_anc_headphones_01",
     handle: "aura-pro-anc-headphones",
     title: {
+      en: "Aura Pro Wireless ANC Headphones",
       de: "Aura Pro Wireless ANC Kopfhörer",
       fr: "Casque Sans Fil ANC Aura Pro",
+      it: "Aura Pro Cuffie Wireless ANC",
+      es: "Auriculares Inalámbricos ANC Aura Pro",
       nl: "Aura Pro Draadloze ANC Koptelefoon",
-      en: "Aura Pro Wireless ANC Headphones",
     },
     description: {
+      en: "High-resolution studio audio with hybrid active noise cancellation, 40-hour battery life, and ultra-lightweight aluminum chassis.",
       de: "High-Resolution Audio mit aktiver hybrider Geräuschunterdrückung, 40h Akkulaufzeit und ultraleichter Aluminium-Konstruktion.",
       fr: "Audio haute résolution avec réduction active hybride du bruit, 40h d'autonomie et structure aluminium ultra-légère.",
+      it: "Audio da studio ad alta risoluzione con cancellazione attiva del rumore ibrida, 40 ore di autonomia e telaio in alluminio ultraleggero.",
+      es: "Audio de estudio de alta resolución con cancelación activa de ruido híbrida, 40 horas de autonomía y chasis de aluminio ultraligero.",
       nl: "High-resolution audio met hybride actieve ruisonderdrukking, 40 uur batterijduur en ultralichte aluminium constructie.",
-      en: "High-resolution studio audio with hybrid active noise cancellation, 40-hour battery life, and ultra-lightweight aluminum chassis.",
     },
     brand: "Apex Direct",
     category: "Consumer Electronics",
@@ -86,16 +90,20 @@ export const MOCK_CATALOG: GenericProduct[] = [
     id: "prod_commuter_backpack_02",
     handle: "nordic-commuter-backpack",
     title: {
+      en: "Nordic Commuter Waterproof Backpack",
       de: "Nordic Commuter Wasserfester Rucksack",
       fr: "Sac à Dos Imperméable Nordic Commuter",
+      it: "Zaino Impermeabile Nordic Commuter",
+      es: "Mochila Impermeable Nordic Commuter",
       nl: "Nordic Commuter Waterdichte Rugzak",
-      en: "Nordic Commuter Waterproof Backpack",
     },
     description: {
+      en: "Minimalist all-weather modular backpack crafted from 100% recycled ocean-bound PET with dedicated 16-inch padded laptop sleeve.",
       de: "Minimalistischer Allwetter-Rucksack aus 100% recyceltem Ocean-Bound PET mit gepolstertem 16-Zoll Laptopfach.",
       fr: "Sac à dos tout temps minimaliste en PET 100% recyclé avec compartiment rembourré pour ordinateur 16 pouces.",
+      it: "Zaino modulare all-weather realizzato in PET riciclato al 100% con scomparto imbottito dedicato per laptop da 16 pollici.",
+      es: "Mochila modular para todo clima fabricada con PET 100% reciclado y compartimento acolchado para portátil de 16 pulgadas.",
       nl: "Minimalistische all-weather rugzak van 100% gerecycled PET met gewatteerd 16-inch laptopvak.",
-      en: "Minimalist all-weather modular backpack crafted from 100% recycled ocean-bound PET with dedicated 16-inch padded laptop sleeve.",
     },
     brand: "Apex Direct",
     category: "Travel & Daily Gear",
@@ -163,16 +171,20 @@ export const MOCK_CATALOG: GenericProduct[] = [
     id: "prod_smart_lamp_03",
     handle: "luma-minimalist-desk-lamp",
     title: {
+      en: "Luma Minimalist Smart LED Desk Lamp",
       de: "Luma Minimalistische Smart LED Schreibtischlampe",
       fr: "Lampe de Bureau LED Minimaliste Luma",
+      it: "Lampada da Scrivania Smart LED Minimalista Luma",
+      es: "Lámpara de Escritorio LED Inteligente Minimalista Luma",
       nl: "Luma Minimalistische Smart LED Bureaulamp",
-      en: "Luma Minimalist Smart LED Desk Lamp",
     },
     description: {
+      en: "Stepless color temperature tuning, integrated 15W Qi fast wireless charging base, and glare-free precision task lighting.",
       de: "Stufenlos einstellbare Farbtemperatur, integriertes 15W Qi-Schnellladepad und blendfreie Präzisionsausleuchtung.",
       fr: "Température de couleur réglable en continu, socle de charge sans fil Qi 15W intégré et éclairage anti-éblouissant.",
+      it: "Regolazione continua della temperatura colore, base di ricarica wireless rapida Qi da 15W integrata e illuminazione antiriflesso di precisione.",
+      es: "Ajuste continuo de temperatura de color, base de carga inalámbrica rápida Qi de 15W integrada e iluminación de precisión antideslumbrante.",
       nl: "Traploos instelbare kleurtemperatuur, geïntegreerde 15W Qi-snellader en verblindingsvrije precisieverlichting.",
-      en: "Stepless color temperature tuning, integrated 15W Qi fast wireless charging base, and glare-free precision task lighting.",
     },
     brand: "Apex Direct",
     category: "Home Office & Lighting",
@@ -240,16 +252,20 @@ export const MOCK_CATALOG: GenericProduct[] = [
     id: "prod_mechanical_watch_04",
     handle: "horizon-automatic-watch",
     title: {
+      en: "Horizon Minimalist Automatic Watch",
       de: "Horizon Automatikuhr Minimalist",
       fr: "Montre Automatique Minimaliste Horizon",
+      it: "Orologio Automatico Minimalista Horizon",
+      es: "Reloj Automático Minimalista Horizon",
       nl: "Horizon Automatisch Horloge Minimalist",
-      en: "Horizon Minimalist Automatic Watch",
     },
     description: {
+      en: "Japanese automatic movement, scratch-resistant sapphire crystal, 5 ATM water resistance, and genuine Italian leather strap.",
       de: "Japanisches Automatikuhrwerk, Saphirglas, 5 ATM wasserdicht mit echtem italienischem Lederarmband.",
       fr: "Mouvement automatique japonais, verre saphir, étanche 5 ATM avec bracelet en cuir italien véritable.",
+      it: "Movimento automatico giapponese, vetro zaffiro antigraffio, resistenza all'acqua 5 ATM e cinturino in vera pelle italiana.",
+      es: "Movimiento automático japonés, cristal de zafiro resistente a rayaduras, resistencia al agua de 5 ATM y correa de piel italiana genuina.",
       nl: "Japans automatisch uurwerk, saffierglas, 5 ATM waterdicht met echt Italiaans leren band.",
-      en: "Japanese automatic movement, scratch-resistant sapphire crystal, 5 ATM water resistance, and genuine Italian leather strap.",
     },
     brand: "Apex Direct",
     category: "Watches & Accessories",
@@ -316,11 +332,12 @@ export const MOCK_CATALOG: GenericProduct[] = [
 ];
 
 catalogRouter.get("/products", (_req: Request, res: Response) => {
-  res.status(200).json({ products: MOCK_CATALOG });
+  return res.status(200).json({ products: MOCK_CATALOG });
 });
 
 catalogRouter.get("/products/:handle", (req: Request, res: Response) => {
-  const product = MOCK_CATALOG.find((p) => p.handle === req.params.handle);
+  const { handle } = req.params;
+  const product = MOCK_CATALOG.find((p) => p.handle === handle);
   if (!product) {
     return res.status(404).json({ error: "Product not found" });
   }

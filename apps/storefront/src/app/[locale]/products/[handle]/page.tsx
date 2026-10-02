@@ -2,15 +2,13 @@ import React from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SupportedLocale } from "@repo/types";
-import { DICTIONARY } from "../../../../lib/i18n";
+import { DICTIONARY, LOCALES } from "../../../../lib/i18n";
 import { getProductByHandle, STORE_PRODUCTS } from "../../../../lib/catalog";
 
 export async function generateStaticParams() {
   const handles = STORE_PRODUCTS.map((p) => p.handle);
-  const locales: SupportedLocale[] = ["de", "fr", "nl", "en"];
-
   const params: Array<{ locale: string; handle: string }> = [];
-  for (const locale of locales) {
+  for (const locale of LOCALES) {
     for (const handle of handles) {
       params.push({ locale, handle });
     }
@@ -24,8 +22,8 @@ export default async function ProductDetailPage({
   params: Promise<{ locale: string; handle: string }>;
 }) {
   const resolved = await params;
-  const locale = (resolved.locale || "de") as SupportedLocale;
-  const dict = DICTIONARY[locale] || DICTIONARY.de;
+  const locale = (LOCALES.includes(resolved.locale as SupportedLocale) ? resolved.locale : "en") as SupportedLocale;
+  const dict = DICTIONARY[locale] || DICTIONARY.en;
 
   const product = getProductByHandle(resolved.handle) || STORE_PRODUCTS[0];
   if (!product) {
@@ -40,7 +38,7 @@ export default async function ProductDetailPage({
     <div style={{ maxWidth: "1100px", margin: "2.5rem auto", padding: "0 1.5rem" }}>
       {/* Breadcrumb */}
       <nav style={{ fontSize: "0.85rem", color: "#6b7280", marginBottom: "1.5rem" }}>
-        <Link href={`/${locale}`} style={{ textDecoration: "none", color: "#6b7280" }}>Home</Link>
+        <Link href={`/${locale}`} style={{ textDecoration: "none", color: "#6b7280" }}>Apex Direct</Link>
         {" / "}
         <Link href={`/${locale}#catalog`} style={{ textDecoration: "none", color: "#6b7280" }}>{dict.navProducts}</Link>
         {" / "}
@@ -66,7 +64,7 @@ export default async function ProductDetailPage({
             <span style={{ color: "#9ca3af" }}>•</span>
             <span style={{ fontSize: "0.8rem", color: "#4b5563" }}>HS: {product.defaultHsCode}</span>
             <span style={{ color: "#9ca3af" }}>•</span>
-            <span style={{ fontSize: "0.8rem", color: "#059669", fontWeight: 600 }}>Auf Lager</span>
+            <span style={{ fontSize: "0.8rem", color: "#059669", fontWeight: 600 }}>{dict.inStock}</span>
           </div>
 
           <h1 style={{ fontSize: "2.2rem", margin: "0.25rem 0 1rem 0", fontWeight: 800, color: "#111827", lineHeight: 1.2 }}>
@@ -96,16 +94,16 @@ export default async function ProductDetailPage({
           {/* Product Specifications */}
           <div style={{ backgroundColor: "#f9fafb", borderRadius: "0.5rem", padding: "1.25rem", border: "1px solid #e5e7eb", marginBottom: "2rem", fontSize: "0.875rem" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#6b7280" }}>Kategorie:</span>
+              <span style={{ color: "#6b7280" }}>{dict.category}:</span>
               <span style={{ fontWeight: 600 }}>{product.category}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-              <span style={{ color: "#6b7280" }}>Material / Bauweise:</span>
+              <span style={{ color: "#6b7280" }}>{dict.material}:</span>
               <span style={{ fontWeight: 600 }}>{product.material}</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span style={{ color: "#6b7280" }}>Versandart:</span>
-              <span style={{ fontWeight: 600 }}>DHL Express / UPS Standard</span>
+              <span style={{ color: "#6b7280" }}>{dict.shippingMethod}:</span>
+              <span style={{ fontWeight: 600 }}>{dict.expressShipping}</span>
             </div>
           </div>
 

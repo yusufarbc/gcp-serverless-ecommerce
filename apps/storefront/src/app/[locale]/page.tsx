@@ -1,13 +1,17 @@
 import React from "react";
 import Link from "next/link";
 import { SupportedLocale } from "@repo/types";
-import { DICTIONARY } from "../../lib/i18n";
+import { DICTIONARY, LOCALES } from "../../lib/i18n";
 import { STORE_PRODUCTS } from "../../lib/catalog";
+
+export async function generateStaticParams() {
+  return LOCALES.map((locale) => ({ locale }));
+}
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const resolved = await params;
-  const locale = (resolved.locale || "de") as SupportedLocale;
-  const dict = DICTIONARY[locale] || DICTIONARY.de;
+  const locale = (LOCALES.includes(resolved.locale as SupportedLocale) ? resolved.locale : "en") as SupportedLocale;
+  const dict = DICTIONARY[locale] || DICTIONARY.en;
 
   return (
     <div style={{ maxWidth: "1200px", margin: "2rem auto", padding: "0 1.5rem" }}>
@@ -37,7 +41,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             textTransform: "uppercase",
           }}
         >
-          Direct-to-Consumer Platform
+          EU Direct-to-Consumer Platform
         </span>
         <h1 style={{ fontSize: "2.5rem", margin: "0 0 1rem 0", fontWeight: 800, lineHeight: 1.2 }}>
           {dict.tagline}
@@ -58,13 +62,13 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             color: "#9ca3af",
           }}
         >
-          <span>🚀 Schneller EU-Versand</span>
+          <span>🚀 {dict.fastEuShipping}</span>
           <span>•</span>
-          <span>🛡️ 14 Tage Rückgaberecht</span>
+          <span>🛡️ {dict.moneyBackGuarantee}</span>
           <span>•</span>
-          <span>🔒 Google Pay & PayPal</span>
+          <span>🔒 {dict.secureCheckout}</span>
           <span>•</span>
-          <span>🇪🇺 Union OSS KDV</span>
+          <span>🇪🇺 {dict.unionOssVat}</span>
         </div>
       </section>
 
@@ -73,9 +77,11 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "1.5rem" }}>
           <div>
             <h2 style={{ fontSize: "1.85rem", margin: 0, fontWeight: 700 }}>{dict.navProducts}</h2>
-            <p style={{ color: "#6b7280", margin: "0.25rem 0 0 0" }}>Entdecken Sie ausgewählte Highlights unseres Sortiments.</p>
+            <p style={{ color: "#6b7280", margin: "0.25rem 0 0 0" }}>{dict.featuredHighlights}</p>
           </div>
-          <span style={{ fontSize: "0.9rem", color: "#2563eb", fontWeight: 600 }}>{STORE_PRODUCTS.length} Produkte verfügbar</span>
+          <span style={{ fontSize: "0.9rem", color: "#2563eb", fontWeight: 600 }}>
+            {STORE_PRODUCTS.length} {dict.productsAvailable}
+          </span>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2rem" }}>
@@ -145,7 +151,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                         )}
                       </div>
                       <span style={{ fontSize: "0.75rem", color: "#059669", fontWeight: 600 }}>
-                        Auf Lager
+                        {dict.inStock}
                       </span>
                     </div>
 
@@ -164,7 +170,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
                           fontWeight: 600,
                         }}
                       >
-                        Details ansehen →
+                        {dict.viewDetails}
                       </Link>
                     </div>
                   </div>

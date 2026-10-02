@@ -2,7 +2,7 @@
 import React, { useState, Suspense } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { SupportedLocale } from "@repo/types";
-import { DICTIONARY } from "../../../lib/i18n";
+import { DICTIONARY, LOCALES } from "../../../lib/i18n";
 import { GooglePayButton } from "../../../components/checkout/GooglePayButton";
 import { PayPalButton } from "../../../components/checkout/PayPalButton";
 import { STORE_PRODUCTS } from "../../../lib/catalog";
@@ -11,26 +11,30 @@ function CheckoutContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const locale = ((params?.locale as string) || "de") as SupportedLocale;
-  const dict = DICTIONARY[locale] || DICTIONARY.de;
+  const resolvedLocale = (params?.locale as string) || "en";
+  const locale = (LOCALES.includes(resolvedLocale as SupportedLocale) ? resolvedLocale : "en") as SupportedLocale;
+  const dict = DICTIONARY[locale] || DICTIONARY.en;
 
   const productHandle = searchParams.get("product") || "aura-pro-anc-headphones";
   const product = STORE_PRODUCTS.find((p) => p.handle === productHandle) || STORE_PRODUCTS[0];
 
-  const [countryCode, setCountryCode] = useState("DE");
+  const defaultCountry = locale === "de" ? "DE" : locale === "fr" ? "FR" : locale === "it" ? "IT" : locale === "es" ? "ES" : locale === "nl" ? "NL" : "DE";
+  const [countryCode, setCountryCode] = useState(defaultCountry);
   const [paymentMethod, setPaymentMethod] = useState<"google_pay" | "paypal" | "card">("google_pay");
 
   const subtotal = product ? product.variants[0].price : 249.0;
-  
+
   // Dynamic EU VAT rates (Union OSS)
   const vatRates: Record<string, number> = {
     DE: 0.19,
     FR: 0.20,
-    NL: 0.21,
-    AT: 0.20,
     IT: 0.22,
     ES: 0.21,
+    NL: 0.21,
+    AT: 0.20,
     BE: 0.21,
+    PT: 0.23,
+    IE: 0.23,
   };
   const vatRate = vatRates[countryCode] || 0.19;
   const tax = Math.round(subtotal * vatRate * 100) / 100;
@@ -51,7 +55,7 @@ function CheckoutContent() {
         {/* Left Column: Delivery & Payment Options */}
         <div style={{ backgroundColor: "white", padding: "1.75rem", borderRadius: "0.75rem", border: "1px solid #e5e7eb", boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
           <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
-            1. Lieferland (Union OSS MwSt.)
+            {dict.selectCountry}
           </h2>
           <select
             value={countryCode}
@@ -66,17 +70,19 @@ function CheckoutContent() {
               marginBottom: "1.5rem",
             }}
           >
-            <option value="DE">Deutschland (19% MwSt.)</option>
+            <option value="DE">Deutschland / Germany (19% MwSt.)</option>
             <option value="FR">France (20% TVA)</option>
-            <option value="NL">Nederland (21% BTW)</option>
-            <option value="AT">Österreich (20% USt.)</option>
-            <option value="IT">Italia (22% IVA)</option>
-            <option value="ES">España (21% IVA)</option>
-            <option value="BE">België / Belgique (21% BTW/TVA)</option>
+            <option value="IT">Italia / Italy (22% IVA)</option>
+            <option value="ES">España / Spain (21% IVA)</option>
+            <option value="NL">Nederland / Netherlands (21% BTW)</option>
+            <option value="AT">Österreich / Austria (20% USt.)</option>
+            <option value="BE">België / Belgique / Belgium (21% BTW/TVA)</option>
+            <option value="IE">Ireland (23% VAT)</option>
+            <option value="PT">Portugal (23% IVA)</option>
           </select>
 
           <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
-            2. Zahlungsmethode wählen
+            {dict.selectPayment}
           </h2>
           <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginBottom: "1.5rem" }}>
             <label
@@ -99,7 +105,7 @@ function CheckoutContent() {
                 onChange={() => setPaymentMethod("google_pay")}
               />
               <span style={{ fontWeight: 600 }}>Google Pay</span>
-              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>1-Klick Zahlung</span>
+              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>{dict.oneClickPayment}</span>
             </label>
 
             <label
@@ -124,7 +130,7 @@ function CheckoutContent() {
               <span style={{ fontWeight: 600, color: "#003087" }}>
                 Pay<span style={{ color: "#0079c1" }}>Pal</span>
               </span>
-              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>Käuferschutz</span>
+              <span style={{ fontSize: "0.8rem", color: "#6b7280", marginLeft: "auto" }}>{dict.buyerProtection}</span>
             </label>
           </div>
 
@@ -141,7 +147,7 @@ function CheckoutContent() {
         {/* Right Column: Order Summary */}
         <div style={{ backgroundColor: "#f9fafb", padding: "1.75rem", borderRadius: "0.75rem", border: "1px solid #e5e7eb", height: "fit-content" }}>
           <h2 style={{ fontSize: "1.15rem", marginBottom: "1rem", fontWeight: 700 }}>
-            Bestellübersicht
+            {dict.orderSummary}
           </h2>
 
           {product && (
@@ -155,7 +161,7 @@ function CheckoutContent() {
                 <div style={{ fontWeight: 600, fontSize: "0.95rem" }}>
                   {product.title[locale] || product.title.en}
                 </div>
-                <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>Menge: 1</div>
+                <div style={{ fontSize: "0.8rem", color: "#6b7280" }}>{dict.quantity}: 1</div>
               </div>
               <div style={{ fontWeight: 700 }}>{subtotal.toFixed(2)} €</div>
             </div>
@@ -163,29 +169,29 @@ function CheckoutContent() {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "0.5rem", fontSize: "0.9rem", color: "#4b5563" }}>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>Zwischensumme:</span>
+              <span>{dict.subtotal}:</span>
               <span style={{ fontWeight: 600, color: "#111827" }}>{subtotal.toFixed(2)} €</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>MwSt. ({Math.round(vatRate * 100)}% OSS):</span>
+              <span>{dict.vatNotice} ({Math.round(vatRate * 100)}% OSS):</span>
               <span style={{ fontWeight: 600, color: "#111827" }}>{tax.toFixed(2)} €</span>
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
-              <span>DHL / UPS Expressversand:</span>
+              <span>{dict.shippingExpress}:</span>
               <span style={{ fontWeight: 600, color: shipping === 0 ? "#059669" : "#111827" }}>
-                {shipping === 0 ? "Kostenlos" : `${shipping.toFixed(2)} €`}
+                {shipping === 0 ? dict.freeShipping : `${shipping.toFixed(2)} €`}
               </span>
             </div>
             <div style={{ borderTop: "2px solid #e5e7eb", paddingTop: "0.75rem", marginTop: "0.5rem", display: "flex", justifyContent: "space-between", fontSize: "1.2rem", fontWeight: 800, color: "#111827" }}>
-              <span>Gesamtbetrag:</span>
+              <span>{dict.totalAmount}:</span>
               <span>{total.toFixed(2)} €</span>
             </div>
           </div>
 
           <div style={{ marginTop: "1.5rem", fontSize: "0.75rem", color: "#6b7280", lineHeight: 1.4 }}>
-            ✓ 14 Tage gesetzliches Widerrufsrecht<br />
-            ✓ Sichere SSL-Verschlüsselung nach PCI-DSS<br />
-            ✓ Schneller EU-Versand mit Sendungsverfolgung
+            ✓ {dict.moneyBackGuarantee}<br />
+            ✓ {dict.secureCheckout}<br />
+            ✓ {dict.fastEuShipping}
           </div>
         </div>
       </div>
@@ -195,7 +201,7 @@ function CheckoutContent() {
 
 export default function CheckoutPage() {
   return (
-    <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center", color: "#6b7280" }}>Lade Kasse...</div>}>
+    <Suspense fallback={<div style={{ padding: "3rem", textAlign: "center", color: "#6b7280" }}>Loading Checkout...</div>}>
       <CheckoutContent />
     </Suspense>
   );

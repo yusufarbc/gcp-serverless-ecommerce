@@ -81,9 +81,16 @@ async function main() {
       currency: "EUR",
       customId: "CART-1234",
     });
-    await check(`${env.name} Storefront Home`, `${env.storefront}/de`);
-    await check(`${env.name} Storefront Product`, `${env.storefront}/de/products/aura-pro-anc-headphones`);
-    await check(`${env.name} Storefront Checkout`, `${env.storefront}/de/checkout`);
+    await postJson(`${env.name} OSS Tax Calc (IT 22%)`, `${env.backend}/api/checkout/calculate-tax`, {
+      subtotal: 100.0,
+      countryCode: "IT",
+    });
+    await check(`${env.name} Storefront Home (EN)`, `${env.storefront}/en`);
+    await check(`${env.name} Storefront Home (IT)`, `${env.storefront}/it`);
+    await check(`${env.name} Storefront Home (DE)`, `${env.storefront}/de`);
+    await check(`${env.name} Storefront Product (IT)`, `${env.storefront}/it/products/aura-pro-anc-headphones`);
+    await check(`${env.name} Storefront GDPR Privacy (IT)`, `${env.storefront}/it/privacy`);
+    await check(`${env.name} Storefront Checkout (IT)`, `${env.storefront}/it/checkout`);
     await check(`${env.name} Storefront Manifest`, `${env.storefront}/manifest.json`);
     await check(`${env.name} Storefront API Proxy (Catalog)`, `${env.storefront}/api/catalog/products`);
   }

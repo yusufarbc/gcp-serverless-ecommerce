@@ -7,13 +7,15 @@ import {
   TwoManLogisticsDetails,
 } from "./regulations";
 
-export type SupportedLocale = "de" | "fr" | "nl" | "en";
+export type SupportedLocale = "en" | "de" | "fr" | "it" | "es" | "nl";
 
 export interface LocalizedString {
+  en: string;
   de: string;
   fr?: string;
+  it?: string;
+  es?: string;
   nl?: string;
-  en: string;
 }
 
 export interface ProductMedia {
