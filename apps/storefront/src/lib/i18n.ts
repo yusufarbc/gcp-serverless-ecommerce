@@ -55,6 +55,15 @@ export interface TranslationDictionary {
   moneyBackGuarantee: string;
   secureCheckout: string;
   unionOssVat: string;
+  support: string;
+  supportDesc: string;
+  customerDesk: string;
+  ticketSubject: string;
+  ticketMessage: string;
+  sendInquiry: string;
+  translatedByGoogle: string;
+  translateToEnglish: string;
+  viewOriginal: string;
 }
 
 export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
@@ -110,6 +119,15 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "14-Day Statutory Returns",
     secureCheckout: "Encrypted PCI-DSS Payments",
     unionOssVat: "EU Union OSS VAT",
+    support: "Customer Support",
+    supportDesc: "Direct assistance for order tracking, VAT invoices, returns, and product questions in your native language.",
+    customerDesk: "Operations Support Desk",
+    ticketSubject: "Subject",
+    ticketMessage: "Your Inquiry (write in any language)",
+    sendInquiry: "Submit Inquiry",
+    translatedByGoogle: "Translated into English via Google Cloud Translate",
+    translateToEnglish: "Translate to English",
+    viewOriginal: "View Original",
   },
   de: {
     brand: "Apex Direct",
@@ -163,6 +181,15 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "14 Tage Rückgaberecht",
     secureCheckout: "SSL-Verschlüsselung (PCI-DSS)",
     unionOssVat: "Union OSS MwSt.",
+    support: "Kundenservice",
+    supportDesc: "Direkte Unterstützung bei Sendungsverfolgung, MwSt.-Rechnungen, Retouren und Produktfragen.",
+    customerDesk: "Support- und Betriebszentrale",
+    ticketSubject: "Betreff",
+    ticketMessage: "Ihre Nachricht (in Ihrer Sprache)",
+    sendInquiry: "Anfrage absenden",
+    translatedByGoogle: "Mit Google Cloud Translate ins Englische übersetzt",
+    translateToEnglish: "Auf Englisch übersetzen",
+    viewOriginal: "Original anzeigen",
   },
   fr: {
     brand: "Apex Direct",
@@ -216,6 +243,15 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "Garantie retour 14 jours",
     secureCheckout: "Paiement sécurisé PCI-DSS",
     unionOssVat: "TVA Union OSS",
+    support: "Service Client",
+    supportDesc: "Assistance directe pour le suivi de commande, les factures avec TVA, les retours et les questions produits.",
+    customerDesk: "Centre d'Assistance Opérationnelle",
+    ticketSubject: "Sujet",
+    ticketMessage: "Votre message (écrivez dans votre langue)",
+    sendInquiry: "Envoyer la demande",
+    translatedByGoogle: "Traduit en anglais via Google Cloud Translate",
+    translateToEnglish: "Traduire en anglais",
+    viewOriginal: "Voir l'original",
   },
   it: {
     brand: "Apex Direct",
@@ -269,6 +305,15 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "14 giorni di reso garantito",
     secureCheckout: "Pagamenti crittografati PCI-DSS",
     unionOssVat: "IVA Union OSS",
+    support: "Assistenza Clienti",
+    supportDesc: "Supporto diretto per tracking ordini, fatture con IVA, resi e informazioni sui prodotti.",
+    customerDesk: "Desk Operativo Assistenza",
+    ticketSubject: "Oggetto",
+    ticketMessage: "Il tuo messaggio (scrivi nella tua lingua)",
+    sendInquiry: "Invia Richiesta",
+    translatedByGoogle: "Tradotto in inglese tramite Google Cloud Translate",
+    translateToEnglish: "Traduci in inglese",
+    viewOriginal: "Visualizza originale",
   },
   es: {
     brand: "Apex Direct",
@@ -322,6 +367,15 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "14 días de devolución",
     secureCheckout: "Pagos cifrados PCI-DSS",
     unionOssVat: "IVA Union OSS",
+    support: "Atención al Cliente",
+    supportDesc: "Asistencia directa para seguimiento de envíos, facturas con IVA, devoluciones y consultas.",
+    customerDesk: "Centro de Soporte Operativo",
+    ticketSubject: "Asunto",
+    ticketMessage: "Tu consulta (escribe en tu idioma)",
+    sendInquiry: "Enviar Consulta",
+    translatedByGoogle: "Traducido al inglés mediante Google Cloud Translate",
+    translateToEnglish: "Traducir al inglés",
+    viewOriginal: "Ver original",
   },
   nl: {
     brand: "Apex Direct",
@@ -375,5 +429,14 @@ export const DICTIONARY: Record<SupportedLocale, TranslationDictionary> = {
     moneyBackGuarantee: "14 dagen bedenktijd",
     secureCheckout: "PCI-DSS gecodeerde betaling",
     unionOssVat: "Union OSS BTW",
+    support: "Klantenservice",
+    supportDesc: "Directe hulp bij tracking, btw-facturen, retouren en productvragen in uw eigen taal.",
+    customerDesk: "Operationele Supportdesk",
+    ticketSubject: "Onderwerp",
+    ticketMessage: "Uw bericht (in uw eigen taal)",
+    sendInquiry: "Aanvraag Verzenden",
+    translatedByGoogle: "Vertaald naar het Engels via Google Cloud Translate",
+    translateToEnglish: "Naar het Engels vertalen",
+    viewOriginal: "Origineel bekijken",
   },
 };

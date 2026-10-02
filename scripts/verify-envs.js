@@ -90,7 +90,13 @@ async function main() {
     await check(`${env.name} Storefront Home (DE)`, `${env.storefront}/de`);
     await check(`${env.name} Storefront Product (IT)`, `${env.storefront}/it/products/aura-pro-anc-headphones`);
     await check(`${env.name} Storefront GDPR Privacy (IT)`, `${env.storefront}/it/privacy`);
-    await check(`${env.name} Storefront Checkout (IT)`, `${env.storefront}/it/checkout`);
+    await check(`${env.name} Support Tickets API`, `${env.backend}/api/support/tickets`);
+    await postJson(`${env.name} Google Translate API (IT -> EN)`, `${env.backend}/api/support/translate`, {
+      text: "Buongiorno, vorrei restituire il prodotto secondo la direttiva UE.",
+      targetLanguage: "en",
+    });
+    await check(`${env.name} Storefront Support Page`, `${env.storefront}/it/support`);
+    await check(`${env.name} Storefront Support Admin Desk`, `${env.storefront}/it/support/admin`);
     await check(`${env.name} Storefront Manifest`, `${env.storefront}/manifest.json`);
     await check(`${env.name} Storefront API Proxy (Catalog)`, `${env.storefront}/api/catalog/products`);
   }

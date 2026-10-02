@@ -6,6 +6,7 @@ import { catalogRouter } from "./api/routes/catalog";
 import { gmcFeedRouter } from "./api/routes/gmc-feed";
 import { checkoutRouter } from "./api/routes/checkout";
 import { tasksRouter } from "./api/routes/tasks";
+import { supportRouter } from "./api/routes/support";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/catalog", catalogRouter);
 app.use("/api/gmc", gmcFeedRouter);
 app.use("/api/checkout", checkoutRouter);
 app.use("/api/tasks", tasksRouter);
+app.use("/api/support", supportRouter);
 
 // Root route
 app.get("/", (_req, res) => {

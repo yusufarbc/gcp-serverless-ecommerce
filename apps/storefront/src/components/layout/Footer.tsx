@@ -59,6 +59,16 @@ export const Footer: React.FC<{ locale: SupportedLocale }> = ({ locale }) => {
               </Link>
             </li>
             <li>
+              <Link href={`/${locale}/support`} style={{ color: "#d1d5db", textDecoration: "none" }}>
+                💬 {dict.support}
+              </Link>
+            </li>
+            <li>
+              <Link href={`/${locale}/support/admin`} style={{ color: "#38bdf8", textDecoration: "none", fontWeight: 600 }}>
+                🌐 {dict.customerDesk} (Translate)
+              </Link>
+            </li>
+            <li>
               <button
                 onClick={reopenCookieBanner}
                 style={{

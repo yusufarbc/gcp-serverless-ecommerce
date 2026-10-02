@@ -19,6 +19,9 @@ export const Navbar: React.FC<{ locale: SupportedLocale }> = ({ locale }) => {
           <Link href={`/${locale}/checkout`} style={{ textDecoration: "none", color: "#4b5563", fontSize: "0.95rem", fontWeight: 500 }}>
             {dict.cart} (1)
           </Link>
+          <Link href={`/${locale}/support`} style={{ textDecoration: "none", color: "#4b5563", fontSize: "0.95rem", fontWeight: 500 }}>
+            {dict.support}
+          </Link>
 
           {/* Prominent EU Language Switcher */}
           <div style={{ display: "flex", gap: "0.35rem", backgroundColor: "#f3f4f6", padding: "0.25rem 0.5rem", borderRadius: "9999px" }}>
