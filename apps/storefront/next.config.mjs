@@ -42,6 +42,15 @@ const nextConfig = {
       },
     ];
   },
+  async rewrites() {
+    const apiUrl = process.env.NEXT_PUBLIC_CORE_API_URL || "https://commerce-core-api-989797182050.europe-west3.run.app";
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${apiUrl}/api/:path*`,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

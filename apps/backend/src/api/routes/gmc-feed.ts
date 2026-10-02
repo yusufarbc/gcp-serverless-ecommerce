@@ -44,7 +44,7 @@ gmcFeedRouter.post("/generate", async (_req: Request, res: Response) => {
           transit_time_label: "standard_express_eu",
           custom_label_0: product.eudr?.isWoodProduct ? "EUDR_COMPLIANT" : "STANDARD",
           custom_label_1: variant.customs.hsCode,
-          custom_label_2: "2_MAN_HANDLING",
+          custom_label_2: variant.parcels.some((p) => p.weightKg > 30) ? "2_MAN_BULKY" : "STANDARD_PARCEL",
         };
       })
     );
@@ -55,7 +55,7 @@ gmcFeedRouter.post("/generate", async (_req: Request, res: Response) => {
     if (process.env.NODE_ENV === "production" || process.env.ENABLE_GCS_UPLOAD === "true") {
       publicUrl = await feedService.uploadFeedToGcs(xml, "feed.xml");
     } else {
-      publicUrl = `http://localhost:${process.env.PORT || 9000}/api/gmc/preview`;
+      publicUrl = `http://localhost:${process.env.PORT || 9000}/api/gmc/feed.xml`;
     }
 
     return res.status(200).json({
@@ -70,10 +70,10 @@ gmcFeedRouter.post("/generate", async (_req: Request, res: Response) => {
   }
 });
 
-gmcFeedRouter.get("/preview", (_req: Request, res: Response) => {
-  const storeUrl = process.env.STOREFRONT_URL || "https://artisanliving.eu";
-  const storeName = process.env.STORE_NAME || "Artisan Living Europe";
-  const bucketName = process.env.GCS_BUCKET_NAME || "gcp-commerce-media";
+const renderFeedHandler = (_req: Request, res: Response) => {
+  const storeUrl = process.env.STOREFRONT_URL || "https://apexstore.eu";
+  const storeName = process.env.STORE_NAME || "Apex Direct Europe";
+  const bucketName = process.env.GCS_BUCKET_NAME || "gcp-serverless-ecommerce-media";
 
   const feedService = new GoogleMerchantFeedService({
     storeName,
@@ -98,6 +98,9 @@ gmcFeedRouter.get("/preview", (_req: Request, res: Response) => {
   );
 
   const xml = feedService.generateXmlFeed(feedItems);
-  res.setHeader("Content-Type", "application/xml");
+  res.setHeader("Content-Type", "application/xml; charset=utf-8");
   return res.send(xml);
-});
+};
+
+gmcFeedRouter.get("/feed.xml", renderFeedHandler);
+gmcFeedRouter.get("/preview", renderFeedHandler);
