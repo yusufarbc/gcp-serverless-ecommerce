@@ -56,4 +56,6 @@ resource "google_cloud_run_v2_service_iam_member" "public_access" {
   member   = "allUsers"
 }
 
-output "service_uri" { value = google_cloud_run_v2_service.service.uri }
+output "service_uri" {
+  value = google_cloud_run_v2_service.service.uri
+}

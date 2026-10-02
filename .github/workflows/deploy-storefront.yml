@@ -1,11 +1,10 @@
 name: Deploy Storefront to Cloud Run
 on:
   push:
-    branches: [main, production, staging]
+    branches: [main]
     paths:
       - "apps/storefront/**"
       - "packages/**"
-      - "storefront-env*.yaml"
 permissions:
   contents: read
   id-token: write
@@ -13,58 +12,32 @@ env:
   PROJECT_ID: gcp-serverless-ecommerce
   REGION: europe-west3
   GAR_REPO: apps
+  SERVICE_NAME: commerce-storefront-pwa
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Determine Environment Variables
-        id: set-env
-        run: |
-          if [ "${{ github.ref_name }}" = "staging" ]; then
-            echo "service_name=commerce-storefront-pwa-staging" >> $GITHUB_OUTPUT
-            echo "env_file=storefront-env.staging.yaml" >> $GITHUB_OUTPUT
-            echo "image_tag=staging" >> $GITHUB_OUTPUT
-            echo "max_instances=3" >> $GITHUB_OUTPUT
-          else
-            echo "service_name=commerce-storefront-pwa" >> $GITHUB_OUTPUT
-            echo "env_file=storefront-env.prod.yaml" >> $GITHUB_OUTPUT
-            echo "image_tag=latest" >> $GITHUB_OUTPUT
-            echo "max_instances=5" >> $GITHUB_OUTPUT
-          fi
-
       - uses: google-github-actions/auth@v2
         with:
           project_id: ${{ env.PROJECT_ID }}
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-
       - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Configure Docker
-        run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
-
-      - name: Build & Push Storefront Container Image
-        run: |
-          IMAGE_TAG="${{ steps.set-env.outputs.image_tag }}"
+      - run: gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+      - run: |
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/nextjs-storefront:${{ github.sha }}"
-          docker build -t $IMAGE -t "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/nextjs-storefront:$IMAGE_TAG" -f apps/storefront/Dockerfile .
+          docker build -t $IMAGE -t "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/nextjs-storefront:latest" -f apps/storefront/Dockerfile .
           docker push --all-tags "${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/nextjs-storefront"
-
-      - name: Deploy to Cloud Run
-        run: |
+      - run: |
           IMAGE="${{ env.REGION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPO }}/nextjs-storefront:${{ github.sha }}"
-          gcloud run deploy ${{ steps.set-env.outputs.service_name }} \
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
             --image=$IMAGE \
             --region=${{ env.REGION }} \
             --platform=managed \
             --allow-unauthenticated \
-            --env-vars-file=${{ steps.set-env.outputs.env_file }} \
-            --port=3000 \
             --min-instances=0 \
-            --max-instances=${{ steps.set-env.outputs.max_instances }} \
+            --max-instances=5 \
             --memory=512Mi \
             --cpu=1 \
-            --concurrency=80 \
-            --project=${{ env.PROJECT_ID }}
+            --concurrency=80

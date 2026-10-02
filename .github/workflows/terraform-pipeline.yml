@@ -36,8 +36,13 @@ jobs:
           workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
-      - working-directory: ${{ steps.set-tf-dir.outputs.tf_root }}
-        run: |
-          terraform fmt -check
-          terraform init
-          terraform plan -no-color
+      - name: Validate Terraform Format
+        run: terraform fmt -check -recursive infra/terraform
+
+      - name: Terraform Init
+        working-directory: ${{ steps.set-tf-dir.outputs.tf_root }}
+        run: terraform init
+
+      - name: Terraform Validate
+        working-directory: ${{ steps.set-tf-dir.outputs.tf_root }}
+        run: terraform validate

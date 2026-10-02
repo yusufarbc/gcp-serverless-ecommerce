@@ -63,7 +63,6 @@ module "backend_run" {
     "PORT"           = "9000"
     "GCP_PROJECT_ID" = var.project_id
     "GCP_REGION"     = var.region
-    "STORE_NAME"     = "Apex Direct Europe"
   }
   secrets = {
     "DATABASE_URL" = "DATABASE_URL"
