@@ -522,4 +522,26 @@ To go live with real credit card processing and real transactional emails:
 4. Replace `PAYPAL_CLIENT_ID` and set `PAYPAL_MODE=live`.
 5. Point your domain registrar to Google Cloud DNS name servers (`apexstore.eu`).
 
-```
+---
+
+## 🛡️ DevSecOps & Security Automation Pipeline
+
+The repository integrates a comprehensive, enterprise-grade, **100% free and open-source DevSecOps pipeline** running automatically on every push, pull request, and weekly schedule via GitHub Actions:
+
+| Security Domain | Tool | Scope & Purpose | Output & Artifacts |
+| :--- | :--- | :--- | :--- |
+| **Secret Scanning** | **Gitleaks** | Prevents accidental leak of private keys, tokens, or credentials across git history with custom `.gitleaks.toml` allowlist | `gitleaks-results.sarif` |
+| **SAST (Static Analysis)** | **Semgrep** | Fast semantic AST scanning for OWASP Top 10, JavaScript, TypeScript, React, and security audits | `semgrep.sarif` uploaded to Security Tab |
+| **SAST (Deep Taint)** | **GitHub CodeQL** | Deep data flow analysis and query suites (`security-extended`, `security-and-quality`) | GitHub Code Scanning alerts |
+| **SCA (Dependencies)** | **Aqua Trivy** | Scans lockfiles and filesystem for high and critical CVE vulnerabilities | `trivy-results.sarif` |
+| **SBOM (Bill of Materials)** | **Aqua Trivy** | Generates standard CycloneDX and SPDX SBOMs for EU Cyber Resilience Act & CISA compliance | `sbom-cyclonedx.json`, `sbom-spdx.json` |
+| **DAST (Dynamic Analysis)** | **OWASP ZAP** | Dynamic application security baseline and API scan against live Staging Cloud Run services | `zap-storefront-scan-report`, `zap-api-scan-report` |
+
+### Triggering Security Pipelines Manually
+```bash
+# Trigger DevSecOps Pipeline
+gh workflow run "DevSecOps Pipeline" --ref main
+
+# Trigger OWASP ZAP DAST Scan against Staging
+gh workflow run "DAST Security Pipeline (OWASP ZAP)" --ref staging
+```
