@@ -10,7 +10,8 @@ function check(name, url) {
         resolve({ status: res.statusCode });
       });
     }).on("error", (err) => {
-      console.error(`[${name}] Error:`, err.message);
+      const safeMsg = String(err.message || "").replace(/[\r\n]/g, "");
+      console.error(`[${name}] Error:`, safeMsg);
       resolve({ status: 500, error: err.message });
     });
   });
@@ -40,7 +41,8 @@ function postJson(name, url, body) {
       }
     );
     req.on("error", (err) => {
-      console.error(`[${name}] Error:`, err.message);
+      const safeMsg = String(err.message || "").replace(/[\r\n]/g, "");
+      console.error(`[${name}] Error:`, safeMsg);
       resolve({ status: 500, error: err.message });
     });
     req.write(data);

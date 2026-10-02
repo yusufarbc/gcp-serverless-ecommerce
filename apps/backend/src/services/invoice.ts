@@ -68,7 +68,6 @@ export class InvoiceService {
     const isDomestic = order.shippingAddress.countryCode === "DE";
     const vatRatePercent = order.subtotal > 0 ? Math.round((order.taxTotal / order.subtotal) * 100) : 19;
     const subtotalNet = Math.round((order.subtotal / (1 + vatRatePercent / 100)) * 100) / 100;
-    const vatTotal = Math.round((order.subtotal - subtotalNet) * 100) / 100;
 
     const items = order.items.map((item) => {
       const grossItemTotal = item.price * item.quantity;

@@ -2,9 +2,9 @@ name: DevSecOps Pipeline
 
 on:
   push:
-    branches: [main, production, staging]
+    branches: [production, staging]
   pull_request:
-    branches: [main, production, staging]
+    branches: [production, staging]
   schedule:
     # Run every Monday at 04:00 UTC for automated weekly security compliance
     - cron: '0 4 * * 1'

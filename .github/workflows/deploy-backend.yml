@@ -1,11 +1,12 @@
 name: Deploy Backend to Cloud Run
+# Automated deployment disabled: Project runs as open-source portfolio demo
 on:
-  push:
-    branches: [main, production, staging]
-    paths:
-      - "apps/backend/**"
-      - "packages/**"
-      - "backend-env*.yaml"
+  workflow_dispatch:
+    inputs:
+      target_env:
+        description: 'Deployment target environment (staging or production)'
+        required: true
+        default: 'staging'
 permissions:
   contents: read
   id-token: write
@@ -21,8 +22,12 @@ jobs:
 
       - name: Determine Environment Variables
         id: set-env
+        env:
+          REF_NAME: ${{ github.ref_name }}
+          INPUT_ENV: ${{ inputs.target_env }}
         run: |
-          if [ "${{ github.ref_name }}" = "staging" ]; then
+          DEPLOY_ENV="${INPUT_ENV:-$REF_NAME}"
+          if [ "$DEPLOY_ENV" = "staging" ]; then
             echo "service_name=commerce-core-api-staging" >> $GITHUB_OUTPUT
             echo "env_file=backend-env.staging.yaml" >> $GITHUB_OUTPUT
             echo "image_tag=staging" >> $GITHUB_OUTPUT

@@ -5,12 +5,18 @@ import { databaseService } from "../../db/database-service";
 
 export const tasksRouter = Router();
 
+function sanitizeLog(val: unknown): string {
+  return String(val ?? "").replace(/[\r\n]/g, "").slice(0, 250);
+}
+
 /**
  * Worker endpoint called by Cloud Tasks to generate PDF invoice and store in GCS
  */
 tasksRouter.post("/invoice-pdf", async (req: Request, res: Response) => {
   const { orderNumber, customerEmail } = req.body;
-  console.log(`[CloudTask: Invoice PDF] Processing invoice for order ${orderNumber} (${customerEmail})`);
+  const safeOrder = sanitizeLog(orderNumber);
+  const safeEmail = sanitizeLog(customerEmail);
+  console.log(`[CloudTask: Invoice PDF] Processing invoice for order ${safeOrder} (${safeEmail})`);
 
   const order = await databaseService.getOrder(orderNumber);
   if (order) {
@@ -37,7 +43,9 @@ tasksRouter.post("/invoice-pdf", async (req: Request, res: Response) => {
  */
 tasksRouter.post("/send-email", async (req: Request, res: Response) => {
   const { to, template, data } = req.body;
-  console.log(`[CloudTask: Send Email] Sending ${template} to ${to}:`, data);
+  const safeTemplate = sanitizeLog(template);
+  const safeTo = sanitizeLog(to);
+  console.log(`[CloudTask: Send Email] Sending ${safeTemplate} to ${safeTo}`);
 
   const emailResult = await emailService.sendEmail({
     to,

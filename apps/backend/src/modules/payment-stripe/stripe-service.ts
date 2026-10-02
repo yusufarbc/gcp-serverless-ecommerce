@@ -3,6 +3,8 @@
  * Supports PaymentIntents (Cards, iDEAL, Bancontact, Klarna, EPS)
  * Seamlessly runs in Demo Sandbox Mode with $0 cost when placeholder keys are used.
  */
+import { randomBytes } from "crypto";
+
 export interface StripePaymentIntentResult {
   success: boolean;
   clientSecret: string;
@@ -81,10 +83,10 @@ export class StripePaymentService {
     }
 
     // Demo Mode Simulation
-    const mockId = `pi_demo_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+    const mockId = `pi_demo_${Date.now()}_${randomBytes(6).toString("hex")}`;
     return {
       success: true,
-      clientSecret: `${mockId}_secret_${Math.random().toString(36).substring(2, 10)}`,
+      clientSecret: `${mockId}_secret_${randomBytes(12).toString("hex")}`,
       paymentIntentId: mockId,
       status: "requires_payment_method",
       amount: amountEur,

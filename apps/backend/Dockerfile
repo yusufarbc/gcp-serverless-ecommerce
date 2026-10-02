@@ -34,5 +34,8 @@ WORKDIR /app/apps/backend
 
 EXPOSE 9000
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 9000) + '/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1))"
+
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "dist/main.js"]

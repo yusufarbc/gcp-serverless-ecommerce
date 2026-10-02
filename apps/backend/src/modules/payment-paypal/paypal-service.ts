@@ -144,11 +144,15 @@ export class PayPalPaymentService {
    * Capture authorized PayPal payment
    */
   public async captureOrder(orderId: string): Promise<PayPalCaptureOrderResult> {
+    if (!orderId || !/^[A-Za-z0-9_-]{1,64}$/.test(orderId)) {
+      throw new Error("Invalid PayPal order ID format");
+    }
+    const safeOrderId = encodeURIComponent(orderId);
     const token = await this.getAccessToken();
 
     if (token) {
       try {
-        const res = await fetch(`${this.baseUrl}/v2/checkout/orders/${orderId}/capture`, {
+        const res = await fetch(`${this.baseUrl}/v2/checkout/orders/${safeOrderId}/capture`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${token}`,

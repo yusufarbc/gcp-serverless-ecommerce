@@ -152,8 +152,10 @@ export class EmailService {
     }
 
     // Demo Simulation Mode (Logs & Records into outbox for zero-cost demo)
+    const safeTo = String(options.to).replace(/[\r\n]/g, "");
+    const safeSubject = String(options.subject).replace(/[\r\n]/g, "");
     console.log(
-      `[EmailService: Demo Mode] 📧 Simulated email sent to "${options.to}" | Subject: "${options.subject}"`
+      `[EmailService: Demo Mode] 📧 Simulated email sent to "${safeTo}" | Subject: "${safeSubject}"`
     );
 
     const emailRecord: EmailOutboxItem = {

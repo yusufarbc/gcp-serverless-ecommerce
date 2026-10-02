@@ -3,6 +3,10 @@ resource "google_dns_managed_zone" "primary_zone" {
   dns_name    = "${var.domain_name}."
   description = "Managed DNS Zone for European D2C Serverless Commerce"
   visibility  = "public"
+
+  dnssec_config {
+    state = "on"
+  }
 }
 
 # Production Storefront Domain Mapping

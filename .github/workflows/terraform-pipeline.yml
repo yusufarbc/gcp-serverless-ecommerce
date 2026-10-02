@@ -1,10 +1,10 @@
 name: Terraform Pipeline
 on:
   push:
-    branches: [main, production, staging]
+    branches: [production, staging]
     paths: ["infra/terraform/**"]
   pull_request:
-    branches: [main, production, staging]
+    branches: [production, staging]
     paths: ["infra/terraform/**"]
 permissions:
   contents: read
@@ -19,8 +19,10 @@ jobs:
 
       - name: Determine Terraform Root Directory
         id: set-tf-dir
+        env:
+          REF_NAME: ${{ github.ref_name }}
         run: |
-          if [ "${{ github.ref_name }}" = "staging" ]; then
+          if [ "$REF_NAME" = "staging" ]; then
             echo "tf_root=infra/terraform/environments/staging" >> $GITHUB_OUTPUT
           else
             echo "tf_root=infra/terraform/environments/prod" >> $GITHUB_OUTPUT

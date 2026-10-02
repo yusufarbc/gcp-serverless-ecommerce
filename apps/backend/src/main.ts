@@ -13,12 +13,28 @@ dotenv.config();
 const app = express();
 const port = process.env.PORT || 9000;
 
-// Enable CORS for Storefront PWA and sGTM
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://127.0.0.1:3000",
+  "https://apexstore.eu",
+  "https://staging.apexstore.eu",
+  "https://commerce-storefront-pwa-989797182050.europe-west3.run.app",
+  "https://commerce-storefront-pwa-staging-989797182050.europe-west3.run.app",
+];
+
+// Enable CORS with restricted origin check for Storefront PWA and sGTM
 app.use(
   cors({
-    origin: "*",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin) || origin.endsWith(".run.app") || origin.endsWith(".apexstore.eu")) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
 

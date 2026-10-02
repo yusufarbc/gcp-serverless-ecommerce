@@ -10,9 +10,9 @@
     "lint": "eslint src --ext .ts"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.12.1",
-    "@google-cloud/tasks": "^5.5.0",
-    "@google-cloud/secret-manager": "^5.6.0",
+    "@google-cloud/storage": "^8.2.0",
+    "@google-cloud/tasks": "^7.2.1",
+    "@google-cloud/secret-manager": "^7.1.1",
     "@repo/types": "*",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

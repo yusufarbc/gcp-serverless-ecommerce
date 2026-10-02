@@ -18,13 +18,32 @@ resource "google_sql_database_instance" "instance" {
     availability_type = "ZONAL" # Single zone to minimize costs
 
     ip_configuration {
-      ipv4_enabled    = false
-      private_network = var.network_id
+      ipv4_enabled                                  = false
+      private_network                               = var.network_id
+      require_ssl                                   = true
+      ssl_mode                                      = "ENCRYPTED_ONLY"
+      enable_private_path_for_google_cloud_services = true
     }
 
     backup_configuration {
-      enabled    = true
-      start_time = "02:00"
+      enabled                        = true
+      start_time                     = "02:00"
+      point_in_time_recovery_enabled = true
+    }
+
+    database_flags {
+      name  = "log_temp_files"
+      value = "0"
+    }
+
+    database_flags {
+      name  = "log_connections"
+      value = "on"
+    }
+
+    database_flags {
+      name  = "log_disconnections"
+      value = "on"
     }
   }
 

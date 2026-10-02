@@ -29,5 +29,8 @@ COPY --chown=node:node --from=builder /app/apps/storefront/.next/static ./apps/s
 WORKDIR /app/apps/storefront
 EXPOSE 3000
 
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:' + (process.env.PORT || 3000) + '/', (r) => process.exit(r.statusCode < 500 ? 0 : 1))"
+
 ENTRYPOINT ["dumb-init", "--"]
 CMD ["node", "server.js"]
